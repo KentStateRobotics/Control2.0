@@ -1,0 +1,4 @@
+websockets
+pyserial
+numpy
+opencv-contrib-python
