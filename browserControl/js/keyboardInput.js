@@ -1,7 +1,4 @@
 /**
  * Handles interactions with html elements and buttons and video stream
- * @module control/interface
+ * @module control/keyboardInput
  */
-
- import * as ws from "./wsClient.js";
-
