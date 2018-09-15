@@ -6,3 +6,27 @@ Obstical detection?
 '''
 import sensor
 import wsServer
+
+@wsServer.command('location')
+def goTo(x, y):
+    '''Drive the robot to point relitive to bin 
+    '''
+    pass
+
+@wsServer.clientRPC('location')
+def sendPosition(x, y):
+    '''Send current positon to client
+    '''
+    pass
+
+@wsServer.command('location')
+def doADig():
+    '''Preform the digging operation
+    '''
+    pass
+
+@wsServer.command('location')
+def cancle():
+    '''stops anything being done by location module 
+    '''
+    pass
