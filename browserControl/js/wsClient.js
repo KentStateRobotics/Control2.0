@@ -14,6 +14,9 @@
   */
 function command(context, name, funct){
     return function(){
+        let data = {};
+        data['context'] = context;
+        data['funct'] = name;
         funct.apply(this, arguments);
     }
 }

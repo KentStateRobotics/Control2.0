@@ -113,7 +113,12 @@ class websocketClient:
             message = await self._conn.recv()
             try:
                 message = json.loads(message)
-                _commands[message['context']][message['funct']](*message['args'], **message['kwargs'])
+                args = []
+                if('args' in message):
+                    args += message['args']
+                if('kwargs' in message):
+                    args.append(message['kwargs'])
+                _commands[message['context']][message['funct']](*args)
             except ValueError as e:
                 print(e)
         except websockets.exceptions.ConnectionClosed as e:
