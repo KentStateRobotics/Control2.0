@@ -14,7 +14,7 @@ def goTo(x, y):
     pass
 
 @wsServer.clientRPC('location')
-def sendPosition(x, y):
+def rpcPosition(x, y):
     '''Send current positon to client
     '''
     pass
