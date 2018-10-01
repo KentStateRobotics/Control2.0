@@ -6,12 +6,14 @@ import wsServer
 import serialConn
 
 @wsServer.command('motor')
-def setMagicNumbers(deadzone=None, rampTime=None):
+def setMagicNumbers(numbers):
     '''Allows remote setting of magic numbers
 
         Args:
-            deadzone (int, optional): Abs value for drive motors that less then will be rounded to 0
-            rampTime (float, optional): Time it takes to ramp from 0 to max in seconds
+            numbers (dict): {
+                    deadzone (int, optional): Abs value for drive motors that less then will be rounded to 0
+                    rampTime (float, optional): Time it takes to ramp from 0 to max in seconds
+                }
     '''
     pass
 
@@ -26,7 +28,7 @@ def getMagicNumbers(deadzone, rampTime):
     pass
 
 @wsServer.command('motor')
-def setDriveSpeed(right, left, ramping=True):
+def setDriveSpeed(right, left, ramping):
     '''Set speed of drive motors and start driving
 
         Args:
@@ -47,7 +49,7 @@ def getDriveSpeed(right, left):
     pass
 
 @wsServer.command('motor')
-def setArmAngle(elbow=None, bucket=None):
+def setArmAngle(elbow, bucket):
     '''Set the angle of the digging arm and bucket
     '''
     pass
@@ -59,7 +61,7 @@ def getArmAngle(elbow, bucket):
     pass
 
 @wsServer.command('motor')
-def stop(release=False):
+def stop(release):
     '''Emergency stop for all motors and will ignore all move commands until released
 
         Args:

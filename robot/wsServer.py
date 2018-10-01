@@ -59,10 +59,10 @@ def clientRPC(context):
             context (string): name of namespace for command
 
         Decorated Function Args:
-            keyword args: clients to send to
-                accepted keywords: target[websocketClient], blob[bytes]
+            accepted keywords: target[websocketClient], blob[bytes]
         If no targets are given it sends to all
         If blob is given then the command will be sent, followed by blob
+        Will not send any keyword arguments, make into dictionary to send
     '''
     def deco(funct):
         def decorator(*args, **kwargs):
@@ -70,15 +70,7 @@ def clientRPC(context):
             data = {}
             data['context'] = context
             data['funct'] = funct.__name__
-            if(args):
-                data['args'] = []
-                for arg in args:
-                    data['args'].append(arg)
-            if(kwargs):
-                data['kwargs'] = {}
-                for key,value in kwargs:
-                    if(key != 'target' and key != 'blob'):
-                        data['kwargs'][key] = value
+            data['args'] = list(args)
             for target in kwargs['targets'] if 'targets' in kwargs else _clients:
                 target._send(data)
                 if('blob' in kwargs):
@@ -113,12 +105,7 @@ class websocketClient:
             message = await self._conn.recv()
             try:
                 message = json.loads(message)
-                args = []
-                if('args' in message):
-                    args += message['args']
-                if('kwargs' in message):
-                    args.append(message['kwargs'])
-                _commands[message['context']][message['funct']](*args)
+                _commands[message['context']][message['funct']](*message['args'])
             except ValueError as e:
                 print(e)
         except websockets.exceptions.ConnectionClosed as e:
