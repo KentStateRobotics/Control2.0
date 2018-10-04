@@ -31,7 +31,7 @@ def start():
     '''Starts the wsServer, begins thread
     '''
     global _wsThread
-    if(_wsThread):
+    if(not _wsThread):
         _wsThread = threading.Thread(target=_start)
         _wsThread.start()
 
@@ -47,8 +47,8 @@ def command(context):
     def deco(funct):
         global _commands
         if(not context in _commands):
-            _commands[context] = []
-        _commands[context].append(funct)
+            _commands[context] = {}
+        _commands[context][funct.__name__] = funct
         return funct
     return deco
 
@@ -84,6 +84,7 @@ class websocketClient:
     ''' 
     def __init__(self, conn):
         self._conn = conn
+        self._alive = True
 
     def _send(self, message):
         '''Sends message to client
@@ -91,28 +92,30 @@ class websocketClient:
             Args:
                 message (string or dict or blob): message to be sent
         '''
+        global _wsThreadLoop
         try:
             if(type(message) is dict):
-                self._conn.send(json.dumps(message))
-            else:
-                self._conn.send(message)
+                message = json.dumps(message)
+            asyncio.run_coroutine_threadsafe(self._conn.send(message), _wsThreadLoop)
         except websockets.exceptions.ConnectionClosed as e:
             print(e)
             self._destory()
 
     async def _beginReceiveLoop(self):
-        try:
-            message = await self._conn.recv()
+        while self._alive:
             try:
-                message = json.loads(message)
-                _commands[message['context']][message['funct']](*message['args'])
-            except ValueError as e:
+                message = await self._conn.recv()
+                try:
+                    message = json.loads(message)
+                    _commands[message['context']][message['funct']](*message['args'])
+                except ValueError as e:
+                    print(e)
+            except websockets.exceptions.ConnectionClosed as e:
                 print(e)
-        except websockets.exceptions.ConnectionClosed as e:
-            print(e)
-            self._destory()
+                self._destory()
 
     def _destory(self):
+        print("destory")
         self._alive = False
 
 def _start():
@@ -136,5 +139,19 @@ async def _handleConn(conn, url):
     client = websocketClient(conn)
     _clients.append(client)
     await client._beginReceiveLoop()
+
+@command('wsServer')
+def commandTest(a):
+    print("command test: " + a)
+    clientRPCTest(a)
+    clientRPCBlobTest(a, blob="blob of bytes")
+
+@clientRPC('wsServer')
+def clientRPCTest(a):
+    print("client rpc test: " + a)
+
+@clientRPC('wsServer')
+def clientRPCBlobTest(a, blob=None):
+    print("client rpc blob test: " + a)
 
 start()
