@@ -14,6 +14,11 @@ def getSerialConn(id):
 
         Returns (serialConn): connection requested, returns None if none is found
     '''
+    ports = list(serial.tools.list_ports.comports())
+    aPorts = []
+    for p in ports:
+        if "Arduino" in ports[1]:
+            aPorts[p].append(ports[p])
     pass
 
 class serialConn:
