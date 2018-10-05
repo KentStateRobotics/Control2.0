@@ -142,16 +142,15 @@ async def _handleConn(conn, url):
 
 @command('wsServer')
 def commandTest(a):
-    print("command test: " + a)
-    clientRPCTest(a)
-    clientRPCBlobTest(a, blob="blob of bytes")
+    print("command test: " + str(a))
+    clientRPCBlobTest(a, blob="test blob")
 
 @clientRPC('wsServer')
 def clientRPCTest(a):
-    print("client rpc test: " + a)
+    print("client rpc test: " + str(a))
 
 @clientRPC('wsServer')
 def clientRPCBlobTest(a, blob=None):
-    print("client rpc blob test: " + a)
+    print("client rpc blob test: " + str(a))
 
 start()

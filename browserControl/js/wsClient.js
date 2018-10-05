@@ -4,7 +4,8 @@
  * @module control/wsClient
  */
 
-const PORT = 4242;
+const _PORT = 4242;
+const _DEBUG = true;
 var _wsConnection;
 var _commands = {};
 var _expectBlob;
@@ -52,10 +53,28 @@ function clientRPC(context, name, funct, blob=false){
     return _commands[context][name];
 }
 
+ /**
+  * Overrides the websocket on open eventhandler
+  * @param {function} funct(websocketEvent) - function to run
+  */  
+function setOnOpen(funct){
+    _wsConnection.onopen = funct;
+}
+
+/**
+  * Overrides the websocket on close eventhandler
+  * @param {function} funct(websocketEvent) - function to run
+  */  
+function setOnClose(funct){
+    _wsConnection.onclose = funct;
+}
+
 function _start(){
-    _wsConnection = new WebSocket('ws://' + window.location.hostname + ':' + PORT);
+    _wsConnection = new WebSocket('ws://' + window.location.hostname + ':' + _PORT);
     _wsConnection.onopen = (evt) => {
-        //commandTest('abc');
+        if(_DEBUG){
+            commandTest('test string');
+        }
     };
     _wsConnection.onmessage = (evt) => {
         if(_expectBlob){
@@ -73,9 +92,14 @@ function _start(){
     };
     _wsConnection.onclose = (evt) => {
         console.log(evt);
+        setTimeout(_start, 1000);
     }
 }
 
+ /**
+  * Test the command system, will echo the paramter given in clientRPCBlobTest
+  * @param {var} a - some value to echo
+  */  
 const commandTest = command('wsServer', 'commandTest', (a) => {
     console.log("command test: " + a);
 });
@@ -92,4 +116,4 @@ const clientRPCBlobTest = clientRPC('wsServer', 'clientRPCBlobTest', (a, blob) =
 
 _start();
 
-export{command, clientRPC, commandTest};
+export{command, clientRPC, commandTest, setOnOpen, setOnClose};
