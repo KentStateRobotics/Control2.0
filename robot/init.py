@@ -4,3 +4,6 @@ import os
 import threading
 import wsServer
 import location
+
+while True:
+    pass
