@@ -5,6 +5,11 @@ import serial
 import serial.tools.list_ports
 import threading
 
+ports = list(serial.tools.list_ports.comports())
+aPorts = []
+
+for p in ports:
+    print(p)
 
 def getSerialConn(id):
     '''Returns a serial connection to a spicific device denoted by id
@@ -14,11 +19,11 @@ def getSerialConn(id):
 
         Returns (serialConn): connection requested, returns None if none is found
     '''
-    ports = list(serial.tools.list_ports.comports())
-    aPorts = []
     for p in ports:
+        print("test")
         if "Arduino" in ports[1]:
-            aPorts[p].append(ports[p])
+            #aPorts[p].append(ports[5])
+            print(ports[p])
     pass
 
 class serialConn:
