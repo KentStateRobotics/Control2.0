@@ -6,20 +6,8 @@ import wsServer
 import serialConn
 
 @wsServer.command('motor')
-def setMagicNumbers(numbers):
+def setMagicNumbers(deadzone, rampTime):
     '''Allows remote setting of magic numbers
-
-        Args:
-            numbers (dict): {
-                    deadzone (int, optional): Abs value for drive motors that less then will be rounded to 0
-                    rampTime (float, optional): Time it takes to ramp from 0 to max in seconds
-                }
-    '''
-    pass
-
-@wsServer.clientRPC('motor')
-def getMagicNumbers(deadzone, rampTime):
-    '''Sends to client the values of wsServer magic numbers
 
         Args:
             deadzone (int): Abs value for drive motors that less then will be rounded to 0
@@ -27,8 +15,18 @@ def getMagicNumbers(deadzone, rampTime):
     '''
     pass
 
+@wsServer.queryHandler('motor')
+def getMagicNumbers():
+    '''Sends to client the values of wsServer magic numbers
+
+        Returns:
+            deadzone (int): Abs value for drive motors that less then will be rounded to 0
+            rampTime (float): Time it takes to ramp from 0 to max in seconds
+    '''
+    return (None, None)
+
 @wsServer.command('motor')
-def setDriveSpeed(right, left, ramping):
+def setDriveSpeed(right, left, ramping=True):
     '''Set speed of drive motors and start driving
 
         Args:
@@ -38,30 +36,38 @@ def setDriveSpeed(right, left, ramping):
     '''
     pass
 
-@wsServer.clientRPC('motor')
-def getDriveSpeed(right, left):
+@wsServer.queryHandler('motor')
+def getDriveSpeed():
     '''Sends the speed of the drives to the client
 
-        Args:
+        Returns:
             right (int): -128:128 speed for right drive
             left (int): -128:128 speed for left drive
     '''
-    pass
+    return (None, None)
 
 @wsServer.command('motor')
 def setArmAngle(elbow, bucket):
     '''Set the angle of the digging arm and bucket
+
+        Args:
+            elbow (int): angular position for arm
+            bucket (int): angular position for bucket
     '''
     pass
 
-@wsServer.clientRPC('motor')
+@wsServer.queryHandler('motor')
 def getArmAngle(elbow, bucket):
     '''Send the angle of the digging arm elbow and bucket
+
+        Returns:
+            elbow (int): angular position of arm
+            bucket (int): angular position of bucket
     '''
-    pass
+    return (None, None)
 
 @wsServer.command('motor')
-def stop(release):
+def stop(release=False):
     '''Emergency stop for all motors and will ignore all move commands until released
 
         Args:

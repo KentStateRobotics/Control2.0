@@ -40,15 +40,14 @@ def command(context):
 
         Args:
             context (string): name of namespace for command
-
-        Decorated Function Args:
-            client (websocketClient, optional) contains client message originated from
     '''
     def deco(funct):
         global _commands
         if(not context in _commands):
             _commands[context] = {}
-        _commands[context][funct.__name__] = funct
+        def decorator(*args, **kwargs):
+            return funct(*args)
+        _commands[context][funct.__name__] = decorator
         return funct
     return deco
 
@@ -60,6 +59,7 @@ def clientRPC(context):
 
         Decorated Function Args:
             accepted keywords: target[websocketClient], blob[bytes]
+
         If no targets are given it sends to all
         If blob is given then the command will be sent, followed by blob
         Will not send any keyword arguments, make into dictionary to send
@@ -75,8 +75,40 @@ def clientRPC(context):
                 target._send(data)
                 if('blob' in kwargs):
                     target._send(kwargs['blob'])
-            funct(*args, **kwargs)
+            funct(*args)
         return decorator
+    return deco
+
+def queryHandler(context):
+    '''Decorator marks function that can be queried and send a response
+
+        Args:
+            context (string): name of namespace for command
+
+        Decorated Function 
+            Args:
+                accepted keywords: blob[bytes]
+            Returns (Truple): arguments for the querrys callback
+        
+        Sends to the client and sent to query
+        If blob is given then the command will be sent, followed by blob
+        Will not send any keyword arguments, make into dictionary to send
+    '''
+    def deco(funct):
+        global _commands
+        if(not context in _commands):
+            _commands[context] = {}
+        def decorator(*args, **kwargs):
+            values = funct(*args)
+            data = {}
+            data['context'] = context
+            data['funct'] = funct.__name__
+            data['args'] =  list(values) if type(values) is tuple else list(values['args']) if type(values) is dict else values
+            kwargs['client']._send(data)
+            if(type(values) is dict and 'blob' in values):
+                kwargs['client']._send(values['blob'])
+        _commands[context][funct.__name__] = decorator
+        return funct
     return deco
 
 class websocketClient:
@@ -107,7 +139,8 @@ class websocketClient:
                 message = await self._conn.recv()
                 try:
                     message = json.loads(message)
-                    _commands[message['context']][message['funct']](*message['args'])
+                    print(*message['args'])
+                    _commands[message['context']][message['funct']](*message['args'], client=self)
                 except ValueError as e:
                     print(e)
             except websockets.exceptions.ConnectionClosed as e:
@@ -140,17 +173,27 @@ async def _handleConn(conn, url):
     _clients.append(client)
     await client._beginReceiveLoop()
 
-@command('wsServer')
+@command('wsTest')
 def commandTest(a):
     print("command test: " + str(a))
     clientRPCBlobTest(a, blob="test blob")
 
-@clientRPC('wsServer')
+@clientRPC('wsTest')
 def clientRPCTest(a):
     print("client rpc test: " + str(a))
 
-@clientRPC('wsServer')
+@clientRPC('wsTest')
 def clientRPCBlobTest(a, blob=None):
     print("client rpc blob test: " + str(a))
+
+@queryHandler('wsTest')
+def queryTest(a):
+    print("query test: " + str(a))
+    return (a,)
+
+@queryHandler('wsTest')
+def queryBlobTest(a):
+    print("query test: " + str(a))
+    return {'args': (a,), 'blob': "query test blob"}
 
 start()

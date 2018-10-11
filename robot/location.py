@@ -9,15 +9,23 @@ import wsServer
 
 @wsServer.command('location')
 def goTo(x, y):
-    '''Drive the robot to point relitive to bin 
+    '''Drive the robot to point relitive to bin
+
+        Args:
+            x (float): x position (width of bin) in meters
+            y (float): y position (length of bin) in meters
     '''
     pass
 
-@wsServer.clientRPC('location')
-def rpcPosition(x, y):
+@wsServer.queryHandler('location')
+def getPosition(x, y):
     '''Send current positon to client
+
+        Returns:
+            x (float): x position (width of bin) in meters
+            y (float): y position (length of bin) in meters
     '''
-    pass
+    return (None,None)
 
 @wsServer.command('location')
 def doADig():
@@ -26,7 +34,7 @@ def doADig():
     pass
 
 @wsServer.command('location')
-def cancle():
+def cancel():
     '''stops anything being done by location module 
     '''
     pass

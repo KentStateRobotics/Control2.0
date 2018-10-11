@@ -54,6 +54,21 @@ function clientRPC(context, name, funct, blob=false){
 }
 
  /**
+  * Decorator to mark functions that can be called here from server and will have a callback
+  * @param {string} context - Name of functions namespace
+  * @param {string} name - Name of function
+  * @param {function} funct - Function to decorate
+  * @param {function} callback - Function call with response
+  * @param {bool} blob - Does this function expect a blob, if so it will be passed in kwargs with key blob
+  * @example
+  * const functionName = query('contextName', 'functionName', (x, y) => {do stuff}, (z, w) => {do stuff with new data}, true);
+  */   
+function query(context, name, funct, callback, blob=false){
+    clientRPC(context, name, callback, blob);
+    return command(context, name, funct);
+}
+
+ /**
   * Overrides the websocket on open eventhandler
   * @param {function} funct(websocketEvent) - function to run
   */  
@@ -73,7 +88,7 @@ function _start(){
     _wsConnection = new WebSocket('ws://' + window.location.hostname + ':' + _PORT);
     _wsConnection.onopen = (evt) => {
         if(_DEBUG){
-            commandTest('test string');
+            queryBlobTest('test string');
         }
     };
     _wsConnection.onmessage = (evt) => {
@@ -100,20 +115,37 @@ function _start(){
   * Test the command system, will echo the paramter given in clientRPCBlobTest
   * @param {var} a - some value to echo
   */  
-const commandTest = command('wsServer', 'commandTest', (a) => {
+const commandTest = command('wsTest', 'commandTest', (a) => {
     console.log("command test: " + a);
 });
 window.commandTest = commandTest;
 
-const clientRPCTest = clientRPC('wsServer', 'clientRPCTest', (a) => {
+const clientRPCTest = clientRPC('wsTest', 'clientRPCTest', (a) => {
     console.log("client rpc test: " + a);
 });
+window.clientRPCTest = clientRPCTest;
 
-const clientRPCBlobTest = clientRPC('wsServer', 'clientRPCBlobTest', (a, blob) => {
+const clientRPCBlobTest = clientRPC('wsTest', 'clientRPCBlobTest', (a, blob) => {
     console.log("client rpc blob test: " + a);
     console.log("blob: " + blob);
 }, true);
+window.clientRPCBlobTest = clientRPCBlobTest;
+
+const queryTest = query('wsTest', 'queryTest', (a) => {
+    console.log("querry sent: " + a);
+}, (a) => {
+    console.log("querry received: " + a);
+});
+window.queryTest = queryTest;
+
+const queryBlobTest = query('wsTest', 'queryBlobTest', (a) => {
+    console.log("querry sent: " + a);
+}, (a, blob) => {
+    console.log("querry received: " + a);
+    console.log("blob: " + blob);
+}, true);
+window.queryBlobTest = queryBlobTest
 
 _start();
 
-export{command, clientRPC, commandTest, setOnOpen, setOnClose};
+export{command, clientRPC, query, setOnOpen, setOnClose};
