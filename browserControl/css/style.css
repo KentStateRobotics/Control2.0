@@ -1,0 +1,50 @@
+body, html{
+    height: 100%;
+}
+#content{
+    overflow: auto;
+}
+#wraper{
+    min-height: 100%;
+    
+}
+#header{
+    width: 100%; 
+    background: linear-gradient(#1F3D73,#0072BB); 
+    margin-top: -3.1px;
+}
+#footer{
+    width: 100%; 
+    background: linear-gradient(#0072BB,#1F3D73); 
+    padding-top: 20px;
+    position: relative;
+    margin-top: -62px;
+    height: 42px;
+    clear: both;
+}
+canvas{
+    width: 100%;
+}
+input[type=range][orient=vertical]
+{
+    -webkit-appearance: slider-vertical; /* WebKit */
+    width: 8px;
+    height: 175px;
+    padding: 0 5px;
+}
+#buttons{
+    display: flex;
+}
+#moveCon{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+}
+html {
+    overflow: scroll;
+    overflow-x: hidden;
+}
+::-webkit-scrollbar {
+    width: 0px;  /* remove scrollbar space */
+    background: transparent;  /* optional: just make scrollbar invisible */
+}

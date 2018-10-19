@@ -1,14 +1,20 @@
 /**
  * Handles establishing a websocket connection and commands
+ * Automaticly tries to connect to the window address when imported
  * @author Jared Butcher <jared.butcher1219@gmail.com>
  * @module control/wsClient
  */
 
 const _PORT = 4242;
 const _DEBUG = true;
+const _TIMEOUT = 1000;
+const _RETRIES = 3;
 var _wsConnection;
 var _commands = {};
 var _expectBlob;
+var _connFailueCounter = 0;
+var _onOpen = (evt) => {};
+var _onClose = (evt) => {};
 
  /**
   * Decorator to use for client to server commands
@@ -73,7 +79,7 @@ function query(context, name, funct, callback, blob=false){
   * @param {function} funct(websocketEvent) - function to run
   */  
 function setOnOpen(funct){
-    _wsConnection.onopen = funct;
+    _onOpen = funct;
 }
 
 /**
@@ -81,15 +87,40 @@ function setOnOpen(funct){
   * @param {function} funct(websocketEvent) - function to run
   */  
 function setOnClose(funct){
-    _wsConnection.onclose = funct;
+    _onClose = funct;
 }
 
-function _start(){
-    _wsConnection = new WebSocket('ws://' + window.location.hostname + ':' + _PORT);
+/**
+ * Returns the ready state of connection
+ * @returns {int} ready state:
+ * 0 - connecting
+ * 1 - open
+ * 2 - closeing
+ * 3 - closed
+ */
+function getReadyState(){
+    return _wsConnection.readyState;
+}
+
+/**
+ * Closes connection
+ */
+function closeConnection(){
+    _wsConnection.close();
+}
+
+/**
+ * Establishes the connection
+ * @param {string} host - Address of host 
+ */
+function start(host=window.location.hostname){
+    _wsConnection = new WebSocket('ws://' + host + ':' + _PORT);
     _wsConnection.onopen = (evt) => {
+        _connFailueCounter = 0;
         if(_DEBUG){
             queryBlobTest('test string');
         }
+        _onOpen(evt);
     };
     _wsConnection.onmessage = (evt) => {
         if(_expectBlob){
@@ -107,7 +138,12 @@ function _start(){
     };
     _wsConnection.onclose = (evt) => {
         console.log(evt);
-        setTimeout(_start, 1000);
+        ++_connFailueCounter;
+        if(_connFailueCounter > _RETRIES){
+            setTimeout(start, _TIMEOUT);
+        } else {
+            _onClose(evt);
+        }
     }
 }
 
@@ -146,6 +182,6 @@ const queryBlobTest = query('wsTest', 'queryBlobTest', (a) => {
 }, true);
 window.queryBlobTest = queryBlobTest
 
-_start();
+start();
 
-export{command, clientRPC, query, setOnOpen, setOnClose};
+export{command, clientRPC, query, setOnOpen, setOnClose, getReadyState, closeConnection, start};

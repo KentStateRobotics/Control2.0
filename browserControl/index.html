@@ -1,1 +1,27 @@
-<script src="js/interface.js" type="module"></script>
+<!DOCTYPE html>
+<head>
+    <title>Robot Control</title>
+    <link type="text/css" href="css/reset.css" rel="stylesheet"/>
+    <link type="text/css" href="css/style.css" rel="stylesheet"/> 
+    <link type="image/png" href="img/favicon.png" rel="shortcut icon"/>
+    <script src="js/ui.js" type="module"></script>
+</head>
+<body>
+<div id="wraper">
+    <img src="img/header-triangle.svg" style="z-index: -1; position: relative; left: -30px;"/>
+    <div id="header">
+        <img src="img/logo_grey.svg" style="width: 200px; margin-left: 50px; margin-bottom: 10px;"/>
+    </div>
+    <div id="content">
+        <div id="UiNotConnected" style="display: inherit;">
+            <h1>not connected</h1>
+        </div>
+        <div id="UiConnected" style="display: none;">
+            <h1>connected</h1>
+        </div>
+    </div>
+</div>
+<div id="footer">
+    <img src="img/footer-accent.svg" style="margin-bottom: -3px"/>
+</div>
+</body>
