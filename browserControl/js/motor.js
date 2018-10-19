@@ -2,6 +2,7 @@
  * Commands to use with motor module
  * @module control/motor
  */
+import stateAttribute from "./js/stateAttribute.js";
 import * as ws from "./js/wsClient";
 
 /**Sets the values of ws magic numbers
