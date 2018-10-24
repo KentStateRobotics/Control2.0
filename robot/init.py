@@ -2,8 +2,13 @@
 '''
 import os
 import threading
-import wsServer
-import location
+import remoteEvent
+
+testVar = remoteEvent.remoteVarEvent("InitTestVar", {"a": 5, "b": 6})
+def handler(client, attribute):
+    print(attribute)
+testVar.addHandler(handler)
 
 while True:
-    pass
+    input()
+    testVar.set({"a": testVar.get()['a'] + 1})

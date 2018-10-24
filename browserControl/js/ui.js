@@ -3,14 +3,24 @@
  * @module control/ui
  */
 
- import * as ws from "./wsClient.js";
+import {remoteEvent, remoteVarEvent} from "./remoteEvent.js";
 
-ws.setOnOpen((evt) => {
-    document.getElementById("UiNotConnected").style.display = "none";
-    document.getElementById("UiConnected").style.display = "inherit";
+var testVar = new remoteVarEvent("InitTestVar", {'a': 0, 'b': 0});
+testVar.addHandler((attribute) => {
+    console.log(attribute);
 });
 
-ws.setOnClose((evt) => {
-    document.getElementById("UiNotConnected").style.display = "inherit";
-    document.getElementById("UiConnected").style.display = "none";
+function increment(){
+    testVar.set({"a": testVar.get()["a"] + 1});
+}
+window.increment = increment;
+
+testVar.getWsStateEvt().addHandler((state) => {
+    if(state == 3){
+        document.getElementById("UiNotConnected").style.display = "none";
+        document.getElementById("UiConnected").style.display = "inherit";
+    } else {
+        document.getElementById("UiNotConnected").style.display = "inherit";
+        document.getElementById("UiConnected").style.display = "none";
+    }
 });
