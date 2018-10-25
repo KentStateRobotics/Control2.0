@@ -7,32 +7,50 @@
 class event{
     /**@class
      * Used to define local events
+     * @param {function(evt)} [handler] - Optional inital handler
      */
-    constructor(){
+    constructor(handler=null){
         this.handlers = [];
+        if(handler){
+            this.addHandler(handler);
+        }
     }
+    /**
+     * Calls all attached event handlers
+     * @param {*} evt - Object to pass with event
+     */
     trigger(evt){
         this.handlers.forEach((handler) => {
             handler(evt);
         });
     }
+    /**
+     * Attaches function to event, is passed whatever parameter is given with event trigger
+     * @param {function(evt)} handler - fucntion to attach
+     */
     addHandler(handler){
         this.handlers.push(handler);
     }
-    removeHandler(handler){
-        this.handlers.splice(0, 1, handler);
-    }
-    removeAllHandlers(){
-        this.handlers = [];
+    /**
+     * Removes given event handler or all handlers if none if given
+     * @param {function(evt)} [handler] - Handler to remove 
+     */
+    removeHandler(handler=null){
+        if(handler){
+            this.handlers.splice(0, 1, handler);
+        }else{
+            this.handlers = [];
+        }
     }
 }
 
 class varEvent extends event{
     /**@class
      * Used to define local events
+     * @param {function(evt)} [handler] - Optional inital handler
      */
-    constructor(attribute){
-        super();
+    constructor(attribute, handler=null){
+        super(handler);
         this.attribute = attribute
     }
     trigger(){
@@ -54,6 +72,9 @@ class varEvent extends event{
     }
     get(){
         return this.attribute;
+    }
+    getCopy(){
+        return JSON.parse(JSON.stringify(this.attribute));
     }
 }
 

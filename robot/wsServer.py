@@ -22,7 +22,6 @@ class websocketClient:
 
     def send(self, message):
         '''Sends message to client
-
             Args:
                 message (string or dict or blob): message to be sent
         '''

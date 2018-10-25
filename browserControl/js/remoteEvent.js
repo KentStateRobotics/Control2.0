@@ -5,34 +5,44 @@
 'use strict'
 
 import {wsClient} from "./wsClient.js";
-import {event} from "./event.js";
+import {event, varEvent} from "./event.js";
 
 const _remoteEvents = {};
 const _wsConnection = new wsClient(4242);
 _wsConnection.onMessage((evt) => {
-    console.log(evt.data);
-    //try{
-        let data = JSON.parse(evt.data);
-        if(data["id"] in _remoteEvents){
-            _remoteEvents[data["id"]](data["evt"]);
-        }
-    //}catch(e){
-    //    console.log(e);
-    //}
+    try{
+        var data = JSON.parse(evt.data);
+    }catch(e){
+        console.log(e);
+    }
+    if(data["id"] in _remoteEvents && data){
+        _remoteEvents[data["id"]](data["evt"]);
+    }
 });
 
-
 class remoteEvent extends event{
-
     /**@class
      * Used to define events that will be triggered on both client and server
      * @param {string} id - Program unique id for event
+     * @param {function(evt)} [handler] - Optional inital handler
      */
-    constructor(id){
-        super();
+    constructor(id, handler=null){
+        super(handler);
         this.id = id;
         _remoteEvents[id] = this._remoteTrigger.bind(this);
-        this.wsStateEvt = _wsConnection.getWsStateEvt();
+    }
+    /**
+     * @returns {varEvent} - Returns event for the state of the websocket client
+     */
+    static getWsStateEvt(){
+        return _wsConnection.getWsStateEvt();
+    }
+    /**
+     * Try to reconnect
+     * @param {string} [host] - host to connect to, if not set connect to previously set 
+     */
+    static reconnect(host=null){
+        _wsConnection.startConn(host);
     }
     /**
      * Trigger the event, calling handlers both here and on synced remote
@@ -45,9 +55,10 @@ class remoteEvent extends event{
         _wsConnection.send(JSON.stringify(data));
         super.trigger(evt);
     }
-    getWsStateEvt(){
-        return this.wsStateEvt;
-    }
+    /**
+     * Triggered remotely, updates values and calls handlers
+     * @param {*} evt - values to update
+     */
     _remoteTrigger(evt){
         super.trigger(evt);
     }
@@ -58,21 +69,22 @@ class remoteVarEvent extends remoteEvent{
      * Syncs a value between here and remote program, event is triggered when value is set
      * @param {string} id - Program unique id for event
      * @param {*} attribute - Value being held and synced
+     * @param {function(evt)} [handler] - Optional inital handler
      */
-    constructor(id, attribute){
-        super(id);
+    constructor(id, attribute, handler=null){
+        super(id, handler);
         this.attribute = attribute;
-        this.wsStateEvt.addHandler((state) => {
+        remoteVarEvent.getWsStateEvt().addHandler((state) => {
             if(state == 1){
                 this._getValueFromServer();
             }
         });
-        if(_wsConnection.wsStateEvt == 1){
+        if(remoteVarEvent.getWsStateEvt() == 1){
             this._getValueFromServer();
         }
     }
     /**
-     * Triggers event, calls handlers
+     * Triggers event, calls handlers and sends value to server
      */
     trigger(){
         super.trigger(this.attribute);
@@ -86,14 +98,16 @@ class remoteVarEvent extends remoteEvent{
         this.trigger();
     }
     /**
-     * @returns Get a deep copy of value being held
+     * @returns The values being held. DO NOT MODIFY VALUES it is a pointer
      */
     get(){
-        //Best way in js to make a deep copy
         return this.attribute;
     }
-    test(){
-        console.log("test");
+    /**
+     * @returns The a deep copy of values being held.
+     */
+    getCopy(){
+        return JSON.parse(JSON.stringify(this.attribute));
     }
     /**
      * Sets values
@@ -117,13 +131,16 @@ class remoteVarEvent extends remoteEvent{
      * @param {*} evt - values to update
      */
     _remoteTrigger(evt){
-        this.test();
         this._set(evt);
         super._remoteTrigger(evt);
     }
+    /**
+     * Requests init values from server
+     */
     _getValueFromServer(){
         let data = {};
         data['id'] = this.id;
+        data['update'] = null;
         _wsConnection.send(JSON.stringify(data));
     }
 }
