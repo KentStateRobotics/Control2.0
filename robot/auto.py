@@ -3,27 +3,22 @@ Uses location to handle finding pit location and moveing robot
 Needs to send telemetry info to clients
 '''
 import location
-import wsServer
+import remoteEvent
 
-@wsServer.command('auto')
-def start(hasGravel):
-    '''Starts the autonomy routine
+'''Triggers to start automation
 
-        Args:
-            hasGravel (bool): is the robot currently carrying gravel? Tells it wether it need to go dump or go dig first
-    '''
-    pass
+    Property:
+        hasGravel (bool, optional): is the robot currently carring gravel
+'''
+startAuto = remoteEvent.remoteEvent("startAuto")
 
-@wsServer.command('auto')
-def stop():
-    '''Stops autonomus control
-    '''
-    pass
+'''Triggers to stop automation
+'''
+stopAuto = remoteEvent.remoteEvent("stopAuto")
 
-@wsServer.queryHandler('auto')
-def getStatus():
-    '''Request for status info
+'''Current status of the automaton module
 
-        Returns: status info of somesort
-    '''
-    return (None)
+    Property:
+        TODO
+'''
+autoStatus = remoteEvent.remoteVarEvent("autoStatus", {})

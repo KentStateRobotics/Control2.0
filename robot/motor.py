@@ -2,81 +2,49 @@
 Will use a serial connection to motor controling arduino
 Handles speed and ramping
 '''
-import wsServer
+import remoteEvent
 import serialConn
 
-@wsServer.command('motor')
-def setMagicNumbers(deadzone, rampTime):
-    '''Allows remote setting of magic numbers
+'''Allows remote setting of magic numbers
 
-        Args:
-            deadzone (int): Abs value for drive motors that less then will be rounded to 0
-            rampTime (float): Time it takes to ramp from 0 to max in seconds
-    '''
-    pass
+    Properties:
+        deadzone (int): Abs value for drive motors that less then will be rounded to 0
+        rampTime (float): Time it takes to ramp from 0 to max in seconds
+'''
+motorSettings = remoteEvent.remoteVarEvent("motorSettings", {"deadzone": 0, "rampTime": 0, "ramping": True})
 
-@wsServer.queryHandler('motor')
-def getMagicNumbers():
-    '''Sends to client the values of wsServer magic numbers
+'''Current speed of the motors
 
-        Returns:
-            deadzone (int): Abs value for drive motors that less then will be rounded to 0
-            rampTime (float): Time it takes to ramp from 0 to max in seconds
-    '''
-    return (None, None)
+    Properties:
+        port (float): -1:1 Speed of port motors
+        star (float): -1:1 Speed of starboard motors
+'''
+motorSpeed = remoteEvent.remoteVarEvent("motorSpeed", {"port": 0, "star": 0})
 
-@wsServer.command('motor')
-def setDriveSpeed(right, left, ramping=True):
-    '''Set speed of drive motors and start driving
+'''Target speed of the motors
 
-        Args:
-            right (int): -128:128 speed for right drive
-            left (int): -128:128 speed for left drive
-            ramping (bool, optional): apply speed with or without smooth ramping
-    '''
-    pass
+    Properties:
+        port (float): -1:1 Target speed of port motors
+        star (float): -1:1 Target speed of starboard motors
+'''
+motorSpeedCom = remoteEvent.remoteVarEvent("motorSpeedCom", {"port": 0, "star": 0})
 
-@wsServer.queryHandler('motor')
-def getDriveSpeed():
-    '''Sends the speed of the drives to the client
+'''Postioton of arm and bucket
 
-        Returns:
-            right (int): -128:128 speed for right drive
-            left (int): -128:128 speed for left drive
-    '''
-    return (None, None)
+    Properties:
+        elbow (int): angular position for arm
+        bucket (int): angular position for bucket
+'''
+armAngle = remoteEvent.remoteVarEvent("armAngle", {"elbow": 0, "bucket": 0})
 
-@wsServer.command('motor')
-def setArmAngle(elbow, bucket):
-    '''Set the angle of the digging arm and bucket
+'''Target postioton of arm and bucket
 
-        Args:
-            elbow (int): angular position for arm
-            bucket (int): angular position for bucket
-    '''
-    pass
+    Properties:
+        elbow (int): Target angular position for arm
+        bucket (int): Target angular position for bucket
+'''
+armAngleCom = remoteEvent.remoteVarEvent("armAngleCom", {"elbow": 0, "bucket": 0})
 
-@wsServer.queryHandler('motor')
-def getArmAngle(elbow, bucket):
-    '''Send the angle of the digging arm elbow and bucket
-
-        Returns:
-            elbow (int): angular position of arm
-            bucket (int): angular position of bucket
-    '''
-    return (None, None)
-
-@wsServer.command('motor')
-def stop(release=False):
-    '''Emergency stop for all motors and will ignore all move commands until released
-
-        Args:
-            release (bool, optional): release the stop
-    '''
-    pass
-
-@wsServer.clientRPC('motor')
-def notifyOfStop():
-    '''Notify client that emergency stop has been initiated
-    '''
-    pass
+'''Emergency stop for all motors and will ignore all move commands until released
+'''
+motorStop = remoteEvent.remoteVarEvent("motorStop", False)

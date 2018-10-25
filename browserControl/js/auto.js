@@ -2,24 +2,20 @@
 * Commands to use with automomy module
 * @module control/auto
 */
-import * as ws from "./js/wsClient";
-   
-/**Starts the autonomy routine
- * @function start
- * @param {bool} hasGravel - is the robot currently carrying gravel? Tells it wether it need to go dump or go dig first
- */
-const start = ws.command('auto', 'start', (hasGravel) => {});
+import {remoteEvent, remoteVarEvent} from "./js/remoteEvent.js";
 
-/**Stops the autonomy routine
- * @function stop
+/**Triggers to start automation
+ * @prop {bool} [hasGravel] - is the robot currently carring gravel
  */
-const stop = ws.command('auto', 'stop', () => {});
+const startAuto = remoteEvent("startAuto")
 
-/**Request for status info
- * @function getPosition
+/**Triggers to stop automation
  */
-/**Called when autonomy status info is received
- * @callback getPosition
- * @param {} status - xstatus info of somesort
+const stopAuto = remoteEvent("stopAuto")
+
+/**Current status of the automaton module
+ * @prop TODO
  */
-const getStatus = ws.query('auto', 'getStatus', () => {}, (status) => {});
+const autoStatus = remoteVarEvent("autoStatus", {})
+
+export {startAuto, stopAuto, autoStatus};

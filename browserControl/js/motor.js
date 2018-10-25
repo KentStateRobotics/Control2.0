@@ -2,67 +2,41 @@
  * Commands to use with motor module
  * @module control/motor
  */
-import stateAttribute from "./js/stateAttribute.js";
-import * as ws from "./js/wsClient";
+import {remoteEvent, remoteVarEvent} from "./js/remoteEvent.js";
 
-/**Sets the values of ws magic numbers
- * @function setMagicNumbers
- * @param {int} deadzone - Abs value for drive motors that less then will be rounded to 0
- * @param {float} rampTime - Time it takes to ramp from 0 to max in seconds
+/**Allows remote setting of magic numbers
+ * @prop {int} deadzone - Abs value for drive motors that less then will be rounded to 0
+ * @prop {float} rampTime - Time it takes to ramp from 0 to max in seconds
  */
-const setMagicNumbers = ws.command('motor', 'setMagicNumbers', (deadzone, rampTime) => {});
+motorSettings = remoteVarEvent("motorSettings", {"deadzone": 0, "rampTime": 0, "ramping": True});
 
-/**Query for the deadzone and rampTime
- * @function getMagicNumbers
+/**Current speed of the motors
+ * @prop {float} port - -1:1 Speed of port motors
+ * @prop {float} star - -1:1 Speed of starboard motors
  */
-/**Called when values of ws magic numbers are received
- * @callback getMagicNumbers
- * @param {int} deadzone - Abs value for drive motors that less then will be rounded to 0
- * @param {float} rampTime - Time it takes to ramp from 0 to max in seconds
- */
-const getMagicNumbers = ws.query('motor', 'getMagicNumbers', () => {}, (deadzone, rampTime) => {});
+motorSpeed = remoteVarEvent("motorSpeed", {"port": 0, "star": 0})
 
-/**Sets the motor speed
- * @function setDriveSpeed
- * @param {int} right - -128:128 speed for right drive
- * @param {int} right - -128:128 speed for left drive
- * @param {bool} ramping - Use smooth ramping
+/**Target speed of the motors
+ * @prop {float} port - -1:1 Target speed of port motors
+ * @prop {float} star - -1:1 Target speed of starboard motors
  */
-const setDriveSpeed = ws.command('motor', 'setDriveSpeed', (right, left, ramping=true) => {});
+motorSpeedCom = remoteVarEvent("motorSpeedCom", {"port": 0, "star": 0})
 
-/**Query motor speed
- * @function getDriveSpeed
+/**Postioton of arm and bucket
+ * @prop {int} elbow - angular position for arm
+ * @prop {int} bucket - angular position for bucket
  */
-/**Called when motor speed is received 
- * @callback getDriveSpeed
- * @param {int} right - -128:128 speed for right drive
- * @param {int} right - -128:128 speed for left drive
- */
-const getDriveSpeed = ws.query('motor', 'getDriveSpeed', () => {}, (right, left) => {});
+armAngle = remoteVarEvent("armAngle", {"elbow": 0, "bucket": 0})
 
-/**Sets the digging arm's elbow and bucket angles
- * @function setArmAngle
- * @param {int} elbow
- * @param {int} bucket
+/**Target postioton of arm and bucket
+ * @prop {int} elbow - Target angular position for arm
+ * @prop {int} bucket - Target angular position for bucket
  */
-const setArmAngle = ws.command('motor', 'setArmAngle', (elbow, bucket) => {});
+armAngleCom = remoteVarEvent("armAngleCom", {"elbow": 0, "bucket": 0})
 
-/**Called when digging arm's elbow and bucket angles are received
- * @function getArmAngle
- * @param {int} elbow
- * @param {int} bucket
+/**Emergency stop for all motors and will ignore all move commands until released
+ * @param {bool} - True to stop, false to release
  */
-const getArmAngle = ws.command('motor', 'getArmAngle', (elbow, bucket) => {});
+motorStop = remoteVarEvent("motorStop", False)
 
-/**Emergency stop of motors, commands will be ignored until released
- * @function stop
- * @param {bool} release - Release the stop command in effect
- */
-const stop = ws.command('motor', 'stop', (release=false) => {});
-
-/**Called when there is a stop command issued
- * @function notifyOfStop
- */
-const notifyOfStop = ws.clientRPC('motor', 'notifyOfStop', () => {});
-
-export{getArmAngle, getDriveSpeed, getMagicNumbers, notifyOfStop, setArmAngle, setDriveSpeed, setMagicNumbers, stop};
+export{motorSettings, motorSpeed, motorSpeedCom, armAngle, armAngleCom, motorStop};

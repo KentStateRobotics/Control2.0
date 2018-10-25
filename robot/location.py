@@ -5,36 +5,16 @@ Command usage of lidar unit though sensor.py
 Obstical detection?
 '''
 import sensor
-import wsServer
+import remoteEvent
 
-@wsServer.command('location')
-def goTo(x, y):
-    '''Drive the robot to point relitive to bin
+#Location of robot in the pit
+pitLoc = remoteEvent.remoteVarEvent("pitLoc", {"x": 0, "y": 0})
 
-        Args:
-            x (float): x position (width of bin) in meters
-            y (float): y position (length of bin) in meters
-    '''
-    pass
+#Location the robot is going to
+pitLocCom = remoteEvent.remoteVarEvent("pitLocComand", {"x": 0, "y": 0})
 
-@wsServer.queryHandler('location')
-def getPosition(x, y):
-    '''Send current positon to client
+#Preforms digging operation
+locDoADig = remoteEvent.remoteEvent("locDoADig")
 
-        Returns:
-            x (float): x position (width of bin) in meters
-            y (float): y position (length of bin) in meters
-    '''
-    return (None,None)
-
-@wsServer.command('location')
-def doADig():
-    '''Preform the digging operation
-    '''
-    pass
-
-@wsServer.command('location')
-def cancel():
-    '''stops anything being done by location module 
-    '''
-    pass
+#Cancels current location module operation
+locCancel = remoteEvent.remoteEvent("locCancel")

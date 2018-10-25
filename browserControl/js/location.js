@@ -2,33 +2,26 @@
  * Commands to use with location module
  * @module control/location
  */
-import * as ws from "./js/wsClient";
+import {remoteEvent, remoteVarEvent} from "./js/remoteEvent.js";
    
-/**Move robot to position relitive to bin
- * @function goTo
- * @param {float} x - x position (width of bin) to travel to in meters
- * @param {float} y - y position (length of bin) to travel to in meters
+/**Location of robot in the pit
+ * @prop {float} x - X location
+ * @prop {float} y - Y location
  */
-const goTo = ws.command('location', 'goTo', (x, y) => {});
+const pitLoc = remoteVarEvent("pitLoc", {"x": 0, "y": 0})
 
-/**Query the robots current position relitive to bin
- * @function getPosition
+/**Location the robot is going to
+ * @prop {float} x - X location
+ * @prop {float} y - Y location
  */
-/**Get the robots current position relitive to bin
- * @callback getPosition
- * @param {float} x - x position (width of bin) in meters
- * @param {float} y - y position (length of bin) in meters
- */
-const getPosition = ws.query('location', 'getPosition', () => {}, (x, y) => {});
+const pitLocCom = remoteVarEvent("pitLocComand", {"x": 0, "y": 0})
 
-/**Preforms the digging operation
- * @function doADig
+/**Preforms digging operation
  */
-const doADig = ws.command('location', 'doADig', () => {});
+const locDoADig = remoteEvent("locDoADig")
 
-/**Preforms the digging operation
- * @function cancle
+/**Cancels current location module operation
  */
-const cancel = ws.command('location', 'cancle', () => {});
+const locCancel = remoteEvent("locCancel")
 
-export {goTo, getPosition, doADig, cancel}
+export {pitLoc, pitLocCom, locDoADig, locCancel}
