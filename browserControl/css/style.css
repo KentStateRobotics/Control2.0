@@ -3,10 +3,10 @@ body, html{
 }
 #content{
     overflow: auto;
+    padding-bottom: 62px;
 }
 #wraper{
     min-height: 100%;
-    
 }
 #header{
     width: 100%; 
@@ -32,13 +32,61 @@ input[type=range][orient=vertical]
     height: 175px;
     padding: 0 5px;
 }
-#buttons{
-    display: flex;
-}
-#moveCon{
+#mainGrid{
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(3, 1fr);
+    font-size: 22px;
+    text-align: center;
+    grid-column-gap: 2px;
+    grid-row-gap: 2px;
+    background-color: gray;
+}
+#mainGrid > *{
+    min-height: 150px;
+    height: 100%;
+    width: 100%;
+    
+}
+#mainGrid > * > *{
+    margin: 5px;
+}
+#camera{
+    grid-column: 2 / 4;
+    grid-row: 1 / 3;
+}
+#speed{
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+}
+#turn{
+    grid-column: 1;
+    grid-row: 2;
+}
+#motorCom{
+    grid-column: 1;
+    grid-row: 3;
+}
+#locCom{
+    grid-column: 2;
+    grid-row: 3;
+}
+#magic{
+    grid-column: 3;
+    grid-row: 3;
+}
+#armPos{
+    grid-column: 4;
+    grid-row: 1;
+}
+#loc{
+    grid-column: 4;
+    grid-row: 2;
+}
+#auto{
+    grid-column: 4;
+    grid-row: 3;
 }
 html {
     overflow: scroll;

@@ -5,6 +5,7 @@
     <link type="text/css" href="css/style.css" rel="stylesheet"/> 
     <link type="image/png" href="img/favicon.png" rel="shortcut icon"/>
     <script src="js/ui.js" type="module"></script>
+    <script src="js/camera.js" type="module"></script>
 </head>
 <body>
 <div id="wraper">
@@ -17,7 +18,21 @@
             <h1>not connected</h1>
         </div>
         <div id="UiConnected" style="display: none;">
-            <h1>connected</h1>
+            <div id="mainGrid">
+                <div id="speed" style="background-color: blue">
+                    <p id="robSpeed">Speed: 5</p>
+                    <p id="comSpeed">Command Speed: 5</p>
+                    <input type="range" id="speedRange">
+                </div>
+                <canvas id="camera" style="background-color: red"></canvas>
+                <div id="armPos" style="background-color: green"></div>
+                <div id="turn" style="background-color: yellow"></div>
+                <div id="motorCon" style="background-color: cyan"></div>
+                <div id="locCon" style="background-color: orange"></div>
+                <div id="magic" style="background-color: black"></div>
+                <div id="loc" style="background-color: teal"></div>
+                <div id="pos" style="background-color: purple"></div>
+            </div>
         </div>
     </div>
 </div>

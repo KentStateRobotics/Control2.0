@@ -5,10 +5,7 @@
 
 import {remoteEvent, remoteVarEvent} from "./remoteEvent.js";
 
-const testVar = new remoteVarEvent("InitTestVar", {'a': 0, 'b': 0});
-testVar.addHandler((attribute) => {
-    console.log(attribute);
-});
+
 
 remoteEvent.getWsStateEvt().addHandler((state) => {
     if(state == 1){

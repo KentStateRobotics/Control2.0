@@ -3,6 +3,7 @@
 import os
 import threading
 import remoteEvent
+import camera
 
 testVar = remoteEvent.remoteVarEvent("InitTestVar", {"a": 5, "b": 6})
 def handler(client, attribute):
