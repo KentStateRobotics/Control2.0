@@ -1,35 +1,36 @@
 '''Implements cameras
+    TODO: Create way to differntiate cameras
 '''
 import wsServer
 import cv2
 import numpy
 
-#cv2.namedWindow('video')
+cameraMap = {
+    "front": cv2.VideoCapture(0),
+    "star": cv2.VideoCapture(1),
+    "rear": cv2.VideoCapture(2),
+    "port": cv2.VideoCapture(3)
+}
 
-video = cv2.VideoCapture(0)
+def getFrame(camera):
+    if camera in cameraMap:
+        rval, frame = cameraMap[camera].read()
+        if frame:
+            try:
+                rval, frame = cv2.imencode(".jpg", frame)
+                frame = frame.tobytes()
+                return frame
+            except e:
+                print(e)
+    return None
 
-'''
-if video.isOpened():
-    rval, frame = video.read()
-else:
-    rval = False
-'''
-
-def sendFrame(client, message):
-    if message == '1':
-        #cv2.imshow('video', frame)
-        rval, frame = video.read()
-        #cv2.imwrite("frame.jpg", frame)
-        #f=open("frame.jpg", "rb")
-        #client.send(f.read())
-        rval, frame = cv2.imencode(".jpg", frame)
-        frame = frame.tobytes()
-        #client.send(json.dumps({'a':str(frame)}))
+def _sendFrame(client, message):
+    frame = getFrame(message)
+    if frame:
         client.send(frame)
-        #key = cv2.waitKey(20)
-        #if key == 27:
-        #    break
+    else:
+        client.send("1")
 
-_wsServer = wsServer.wsServer(4243, sendFrame)
 
-#cv2.destroyWindow('video')
+
+_wsServer = wsServer.wsServer(4243, _sendFrame)
