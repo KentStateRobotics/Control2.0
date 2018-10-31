@@ -15,7 +15,7 @@ cameraMap = {
 def getFrame(camera):
     if camera in cameraMap:
         rval, frame = cameraMap[camera].read()
-        if frame:
+        if not frame is None:
             try:
                 rval, frame = cv2.imencode(".jpg", frame)
                 frame = frame.tobytes()

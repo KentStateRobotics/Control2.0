@@ -5,8 +5,6 @@
 
 import {remoteEvent, remoteVarEvent} from "./remoteEvent.js";
 
-
-
 remoteEvent.getWsStateEvt().addHandler((state) => {
     if(state == 1){
         document.getElementById("UiNotConnected").style.display = "none";
@@ -16,3 +14,8 @@ remoteEvent.getWsStateEvt().addHandler((state) => {
         document.getElementById("UiConnected").style.display = "none";
     }
 });
+
+function reconnect(){
+    remoteEvent.reconnect(document.getElementById("hostAddress").value);
+}
+window.reconnect = reconnect;

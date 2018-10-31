@@ -16,6 +16,8 @@
     <div id="content">
         <div id="UiNotConnected" style="display: inherit;">
             <h1>not connected</h1>
+            <input type="button" value="connect" onclick="reconnect()"/>
+            <label>Host address: </label><input type="text" id="hostAddress"/>
         </div>
         <div id="UiConnected" style="display: none;">
             <div id="mainGrid">
@@ -24,9 +26,13 @@
                     <p id="comSpeed">Command Speed: 5</p>
                     <input type="range" id="speedRange">
                 </div>
-                <canvas id="camera" style="background-color: red">
-                    <p id="cameraError" style="display: none;"></p>
-                </canvas>
+                <div id="cameraDiv" style="background-color: red">
+                    <div>
+                        <canvas id="cameraView">
+                            <p id="cameraError" style="display: none;"></p>
+                        </canvas>
+                    </div>
+                </div>
                 <div id="armPos" style="background-color: green"></div>
                 <div id="turn" style="background-color: yellow"></div>
                 <div id="motorCon" style="background-color: cyan"></div>

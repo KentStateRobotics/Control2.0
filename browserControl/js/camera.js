@@ -8,18 +8,18 @@ const _CAM_PORT = 4243;
 const _client = new ws.wsClient(_CAM_PORT);
 var _camera = "front";
 var _active = false;
-const _canvas = document.getElementById("camera").getContext('2d');
+const _canvas = document.getElementById("cameraView").getContext('2d');
 const _error = document.getElementById("cameraError");
 _client.onMessage((evt) => {
     if(evt.data != "1"){
         createImageBitmap(evt.data).then(function(img) {
             _canvas.canvas.width = img.width;
             _canvas.canvas.height = img.height;
+            
             _canvas.drawImage(img, 0, 0);
             if(_active){
                 requestAnimationFrame(_request);
             }
-            
         });
         _error.style.display = "none";
     }else{
