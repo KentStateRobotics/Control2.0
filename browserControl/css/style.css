@@ -3,7 +3,7 @@ body, html{
 }
 #content{
     overflow: auto;
-    padding-bottom: 62px;
+    padding-bottom: 45px;
 }
 #wraper{
     min-height: 100%;
@@ -16,11 +16,15 @@ body, html{
 #footer{
     width: 100%; 
     background: linear-gradient(#0072BB,#1F3D73); 
-    padding-top: 20px;
     position: relative;
-    margin-top: -62px;
-    height: 42px;
+    margin-top: -45px;
+    height: 45px;
     clear: both;
+}
+#footer > *{
+    height: 100%;
+    width: 100%;
+    min-width: 1000px;
 }
 canvas{
     width: 100%;
@@ -36,7 +40,7 @@ input[type=range][orient=vertical]
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    font-size: 22px;
+    font-size: 25px;
     text-align: center;
     grid-column-gap: 2px;
     grid-row-gap: 2px;
@@ -44,6 +48,7 @@ input[type=range][orient=vertical]
 }
 #mainGrid > *{
     min-height: 150px;
+    background-color: white;
 }
 #mainGrid > * > *{
     margin: 5px;
@@ -51,9 +56,6 @@ input[type=range][orient=vertical]
 #cameraDiv{
     grid-column: 2 / 4;
     grid-row: 1 / 3;
-}
-#cameraView{
-
 }
 #speed{
     grid-column: 1;
@@ -87,6 +89,14 @@ input[type=range][orient=vertical]
 #auto{
     grid-column: 4;
     grid-row: 3;
+}
+#eStopButton {
+    border-radius: 50%; 
+    background-color: red; 
+    height: 150px; 
+    width: 150px;
+    font-size: 35px;
+    font-weight: bold;
 }
 html {
     overflow: scroll;

@@ -15,7 +15,8 @@ _client.onMessage((evt) => {
         createImageBitmap(evt.data).then(function(img) {
             _canvas.canvas.width = img.width;
             _canvas.canvas.height = img.height;
-            
+            _canvas.canvas.style.maxHeight = window.innerHeight * .5 + "px";
+            _canvas.canvas.style.maxWidth = window.innerHeight * .5 * img.width / img.height + "px";
             _canvas.drawImage(img, 0, 0);
             if(_active){
                 requestAnimationFrame(_request);

@@ -18,4 +18,3 @@ remoteEvent.getWsStateEvt().addHandler((state) => {
 function reconnect(){
     remoteEvent.reconnect(document.getElementById("hostAddress").value);
 }
-window.reconnect = reconnect;

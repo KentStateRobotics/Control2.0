@@ -6,6 +6,7 @@
     <link type="image/png" href="img/favicon.png" rel="shortcut icon"/>
     <script src="js/ui.js" type="module"></script>
     <script src="js/camera.js" type="module"></script>
+    <script src="js/graphicalStatus.js" type="module"></script>
 </head>
 <body>
 <div id="wraper">
@@ -21,25 +22,30 @@
         </div>
         <div id="UiConnected" style="display: none;">
             <div id="mainGrid">
-                <div id="speed" style="background-color: blue">
+                <div id="speed">
                     <p id="robSpeed">Speed: 5</p>
                     <p id="comSpeed">Command Speed: 5</p>
                     <input type="range" id="speedRange">
+                    <input type="button" id="normalStop" value="Soft stop">
                 </div>
-                <div id="cameraDiv" style="background-color: red">
-                    <div>
-                        <canvas id="cameraView">
+                <div id="cameraDiv">
+                        <canvas style="margin: 0px;" id="cameraView">
                             <p id="cameraError" style="display: none;"></p>
                         </canvas>
-                    </div>
                 </div>
-                <div id="armPos" style="background-color: green"></div>
-                <div id="turn" style="background-color: yellow"></div>
-                <div id="motorCon" style="background-color: cyan"></div>
-                <div id="locCon" style="background-color: orange"></div>
-                <div id="magic" style="background-color: black"></div>
-                <div id="loc" style="background-color: teal"></div>
-                <div id="pos" style="background-color: purple"></div>
+                <div id="arm"></div>
+                <div id="status">
+                    <canvas style="height: 100%; width: 80%; margin:0px;" id="statusCanvas">
+
+                    </canvas>
+                </div>
+                <div id="eStop">
+                    <input id="eStopButton" type="button" value="E STOP">
+                </div>
+                <div id="locCon"></div>
+                <div id="magic"></div>
+                <div id="loc"></div>
+                <div id="pos"></div>
             </div>
         </div>
     </div>
