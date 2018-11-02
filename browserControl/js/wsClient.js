@@ -1,95 +1,95 @@
 /**
  * Handles establishing a websocket connection and commands
+ * Automaticly tries to connect to the window address when imported
  * @author Jared Butcher <jared.butcher1219@gmail.com>
  * @module control/wsClient
  */
+'use strict'
 
-const PORT = 4242;
-var _wsConnection;
-var _commands = {};
-var _expectBlob;
+import {varEvent} from "./event.js";
 
- /**
-  * Decorator to use for client to server commands
-  * @param {string} context - Name of functions namespace
-  * @param {string} name - Name of function
-  * @param {function} funct - Function to decorate
-  * @example
-  * const functionName = command('contextName', functionName', (x, y) => {do stuff});
-  */
-function command(context, name, funct){
-    return function(){
-        let data = {};
-        data['context'] = context;
-        data['funct'] = name;
-        data['args'] = Object.values(arguments);
-        _wsConnection.send(JSON.stringify(data));
-        funct(...data['args']);
+const _TIMEOUT = 1000;
+const _RETRIES = 3;
+
+class wsClient{
+    
+    /**@class
+     * Establishes the connection
+     * @param {int} port - Port to connect to
+     * @param {string} host - Address of host 
+     */
+    constructor(port, host=window.location.hostname){
+        this._port = port;
+        this._host = host;
+        this._open = false;
+        this._onMessageFunct = null;
+        this._connFailueCounter = 0;
+        this._wsStateEvt = new varEvent(0);
+        this.startConn();
     }
-}
-
- /**
-  * Decorator to mark functions that can be called here from server
-  * @param {string} context - Name of functions namespace
-  * @param {string} name - Name of function
-  * @param {function} funct - Function to decorate
-  * @param {bool} blob - Does this function expect a blob, if so it will be passed in kwargs with key blob
-  * @example
-  * const functionName = clientRPC('contextName', 'functionName', (x, y) => {do stuff}, true);
-  */    
-function clientRPC(context, name, funct, blob=false){
-    if(!_commands[context]){
-        _commands[context] = {}
+    /**
+     * Event launched when websocket opens or closes
+     * 0 - Connecting
+     * 1 - Open
+     * 2 - Closeing
+     * 3 - Closed
+     */
+    getWsStateEvt(){
+        return this._wsStateEvt;
     }
-    _commands[context][name] = function(){
-        if(blob) {
-            _expectBlob = [funct, Object.values(arguments)];
+    /**
+     * Sets function to handle onmessage event
+     * @param {function(evt)} funct - function to handle on message event
+     */
+    onMessage(funct){
+        this._onMessageFunct = funct;
+        this._wsConnection.onmessage = funct;
+    }
+    /**
+     * Closes the websocket
+     */
+    close(){
+        open = false;
+        this._wsConnection.onclose = null;
+        this._wsConnection.close();
+        this._wsStateEvt.set(3);
+    }
+    /**
+     * Sends message to server
+     * @param {string} message - Message to send
+     */
+    send(message){
+        this._wsConnection.send(message);
+    }
+    /**
+     * Establishes connection
+     */
+    startConn(host=null){
+        if(this._wsConnection){
+            this.close();
         }
-        else {
-            funct(...Object.values(arguments));
+        if(host){
+            this._host = host;
         }
-    }
-    return _commands[context][name];
-}
-
-function _start(){
-    _wsConnection = new WebSocket('ws://' + window.location.hostname + ':' + PORT);
-    _wsConnection.onopen = (evt) => {
-        //commandTest('abc');
-    };
-    _wsConnection.onmessage = (evt) => {
-        if(_expectBlob){
-            _expectBlob[0](..._expectBlob[1],evt.data);
-            _expectBlob = null;
-        }else{
-            try{
-                let data = JSON.parse(evt.data);
-                _commands[data['context']][data['funct']](...data['args']);
-            }catch(e){
-                console.log(e);
-                return;
+                this.open = true;
+        this._wsConnection = new WebSocket("ws://" + this._host + ":" + this._port);
+        this._wsConnection.onopen = (evt) => {
+            this._connFailueCounter = 0;
+            this._wsStateEvt.set(this._wsConnection.readyState);
+        };
+        this._wsConnection.onclose = (evt) => {
+            console.log(evt);
+            ++this._connFailueCounter;
+            if(this._connFailueCounter > _RETRIES && this.open){
+                setTimeout(start, _TIMEOUT);
+            } else {
+                this._wsStateEvt.set(this._wsConnection.readyState);
             }
+        };
+        if(this._onMessageFunct){
+            this._wsConnection.onmessage = this._onMessageFunct;
         }
-    };
-    _wsConnection.onclose = (evt) => {
-        console.log(evt);
     }
 }
 
-const commandTest = command('wsServer', 'commandTest', (a) => {
-    console.log("command test: " + a);
-});
-window.commandTest = commandTest;
-
-const clientRPCTest = clientRPC('wsServer', 'clientRPCTest', (a) => {
-    console.log("client rpc test: " + a);
-});
-
-const clientRPCBlobTest = clientRPC('wsServer', 'clientRPCBlobTest', (a, blob) => {
-    console.log("client rpc blob test: " + a);
-    console.log("blob: " + blob);
-}, true);
-
-_start();
-
-export{command, clientRPC, commandTest};
+export {wsClient};

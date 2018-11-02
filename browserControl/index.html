@@ -1,1 +1,56 @@
-<script src="js/interface.js" type="module"></script>
+<!DOCTYPE html>
+<head>
+    <title>Robot Control</title>
+    <link type="text/css" href="css/reset.css" rel="stylesheet"/>
+    <link type="text/css" href="css/style.css" rel="stylesheet"/> 
+    <link type="image/png" href="img/favicon.png" rel="shortcut icon"/>
+    <script src="js/ui.js" type="module"></script>
+    <script src="js/camera.js" type="module"></script>
+    <script src="js/graphicalStatus.js" type="module"></script>
+</head>
+<body>
+<div id="wraper">
+    <img src="img/header-triangle.svg" style="z-index: -1; position: relative; left: -30px;"/>
+    <div id="header">
+        <img src="img/logo_grey.svg" style="width: 200px; margin-left: 50px; margin-bottom: 10px;"/>
+    </div>
+    <div id="content">
+        <div id="UiNotConnected" style="display: inherit;">
+            <h1>not connected</h1>
+            <input type="button" value="connect" onclick="reconnect()"/>
+            <label>Host address: </label><input type="text" id="hostAddress"/>
+        </div>
+        <div id="UiConnected" style="display: none;">
+            <div id="mainGrid">
+                <div id="speed">
+                    <p id="robSpeed">Speed: 5</p>
+                    <p id="comSpeed">Command Speed: 5</p>
+                    <input type="range" id="speedRange">
+                    <input type="button" id="normalStop" value="Soft stop">
+                </div>
+                <div id="cameraDiv">
+                        <canvas style="margin: 0px;" id="cameraView">
+                            <p id="cameraError" style="display: none;"></p>
+                        </canvas>
+                </div>
+                <div id="arm"></div>
+                <div id="status">
+                    <canvas style="height: 100%; width: 80%; margin:0px;" id="statusCanvas">
+
+                    </canvas>
+                </div>
+                <div id="eStop">
+                    <input id="eStopButton" type="button" value="E STOP">
+                </div>
+                <div id="locCon"></div>
+                <div id="magic"></div>
+                <div id="loc"></div>
+                <div id="pos"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="footer">
+    <img src="img/footer-accent.svg" style="margin-bottom: -3px"/>
+</div>
+</body>

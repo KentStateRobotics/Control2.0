@@ -107,3 +107,4 @@ venv.bak/
 out/
 
 nginx
+.vscode
