@@ -6,10 +6,11 @@ import serial.tools.list_ports
 import threading
 
 ports = list(serial.tools.list_ports.comports())
-aPorts = []
 
-for p in ports:
-    print(p)
+def start ():
+    for p in ports:
+        if "Arduino" in p:
+            serialConn.serilaConns.append(serialConn(p))
 
 def getSerialConn(id):
     '''Returns a serial connection to a spicific device denoted by id
@@ -19,14 +20,33 @@ def getSerialConn(id):
 
         Returns (serialConn): connection requested, returns None if none is found
     '''
-    for p in ports:
-        print("test")
-        if "Arduino" in ports[1]:
-            #aPorts[p].append(ports[5])
-            print(ports[p])
-    pass
+    for conn in serialConn.serilaConns:
+        if (conn.getId() == id): #write get id method 
+            return conn
+    return None
 
-class serialConn:
+class serialConn():
+    serilaConns = []
+    
+    def __init__ (self, port):
+        self.id = ""
+        self.newConn = serial.Serial(port)
+        threading.Thread(target = self.findId)
+
+    def getId(self):
+        return self.id
+
+    def findId (self, port): #loops to get id from arduino
+        ser = serial.Serial()
+        ser.port = port
+        ser.open()
+
+        while self.id == "":
+           self.id = ser.read()
+
+        ser.close()
+        pass
+
     '''Handles one serial connection
     '''
     def send(self, message):
@@ -60,3 +80,5 @@ class serialConn:
         '''Recreate connection and restart arduino device in the process
         '''
         pass
+
+start()
