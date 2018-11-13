@@ -5,95 +5,212 @@ Interacts with a DWM1001
 import serial
 import serial.tools.list_ports
 import binascii
+import threading
+import enum
+import collections
+import time
 
-ports = serial.tools.list_ports.comports()
+TIMEOUT = .1
+DELAY = .5
 
-conn = None
+@enum.unique
+class dwmApiMode(enum.IntEnum):
+    '''Defines the 3 modes of operation for position reterival
+    '''
+    manual = 0, #Do not automaticly pole for postion
+    posPole = 1, #pole just for this devices posistion
+    fullPole = 2 #pole for all devices postion and distance
 
-for p in ports:
-    if "1366:0105" in p[2]:
-        conn = serial.Serial(p[0], 115200, timeout=.1)
-        break
+@enum.unique
+class dwmType(enum.IntEnum):
+    tag = 0,
+    anchor = 1
+
+pos = collections.namedtuple('pos', ['x', 'y', 'z', 'qf'])
+anchor = collections.namedtuple('anchor', ['id', 'distance', 'disanceQf', 'pos'])
+tag = collections.namedtuple('tag', ['id', 'distance', 'distanceQf'])
+
+class dwmAPI:
+    '''Interacts with a single dwm1001 module, will manage keeping positon and distances. Can automaticly pole module in sperate thread to update values
+
+        Args:
+            mode [dwmApiMode]: mode of updateing values
+            device [string]: serial device to connect to, if not set finds first dwm1001
+    '''
+
+    def __init__(self, mode=dwmApiMode.manual, device=None):
+        self._conn = serial.Serial(baudrate=115200, timeout=TIMEOUT)
+        self._device = device
+        self._connect()
+        self._pos = pos(0, 0, 0, 0)
+        self._tags = []
+        self._anchors = []
+        self._type = None
+        self._lock = threading.RLock()
+        self._poleThread = threading.Thread(target=self._pole)
+        self._mode = None
+        self.setMode(mode)
+
+    def _connect(self):
+        if self._device == None:
+            for port in serial.tools.list_ports.comports():
+                if "1366:0105" in port[2]:
+                    self._conn.port = port[0]
+                    break
+        else:
+            self._conn.port = self._device
+        self._conn.open()
+        if not self._conn.is_open:
+            raise serial.SerialException("Could not connect to port")
+
+    def _send(self, data):
+        if not self._conn.is_open:
+            self._connect()
+        self._conn.write(bytes(data)) 
+
+    def _receive(self, tlvs=1, length=0):
+        if not self._conn.is_open:
+            self._connect()
+        if length != 0:
+            return self._conn.read(length)
+        else:
+            data = []
+            for tlv in range(0, tlvs):
+                header = self._conn.read(2)
+                if len(header) == 2:
+                    data.append((header, self._conn.read(header[1])))
+            if len(data) >= 1 and len(data[0]) == 2 and len(data[0][1]) == 1 and data[0][1][0] == 0x00:
+                return data
+            else:
+                return None
+
+    def _pole(self):
+        while True:
+            if self._mode == dwmApiMode.posPole:
+                self.dwmPosGet()
+            elif self._mode == dwmApiMode.fullPole:
+                self.dwmLocGet()
+            else:
+                break;
+            time.sleep(DELAY)
+
+    def setMode(self, mode):
+        '''Sets the mode of operation, will start up thread for the non-manual modes
+        '''
+        self._mode = mode
+        if mode != dwmApiMode.manual and not self._poleThread.is_alive():
+            self._poleThread = threading.Thread(target=self._pole)
+            self._poleThread.start()
         
-def send(data):
-    conn.write(bytearray(data))
+    def getMode(self):
+        return self._mode
 
+    def getSelfPos(self):
+        '''Returns: positon and quality factor of this module
+        '''
+        with self._lock:
+            return self._pos
 
-def dwm_pos_get():
-    tx = [0x02, 0x00]
-    send(tx)
-    rx_data = conn.read(18)
-    data_cnt = 5
-    x = rx_data[data_cnt] + (rx_data[data_cnt+1]<<8) + (rx_data[data_cnt+2]<<16) + (rx_data[data_cnt+3]<<24)
-    data_cnt += 4
-    y = rx_data[data_cnt] + (rx_data[data_cnt+1]<<8) + (rx_data[data_cnt+2]<<16) + (rx_data[data_cnt+3]<<24)
-    data_cnt += 4
-    z = rx_data[data_cnt] + (rx_data[data_cnt+1]<<8) + (rx_data[data_cnt+2]<<16) + (rx_data[data_cnt+3]<<24)
-    data_cnt += 4
-    qf = rx_data[data_cnt]
+    def getTags(self):
+        '''Only updated by dwmLocGet if this module is an anchor
 
-    print("X: " + str(x))
-    print("Y: " + str(y))
-    print("Z: " + str(z))
-    print("QF: " + str(qf))
+            Returns: list of tags
+        '''
+        with self._lock:
+            return list.copy(self._tags)
 
-
-
-LOC_DATA_POS_OFFSET = 3
-LOC_DATA_DIST_OFFSET = LOC_DATA_POS_OFFSET+15
-def dwm_loc_get():
-    txData = [0x0C, 0x00]
-    send(txData)
-    data = conn.read(256)
-    print(data)
-    if data and len(data) >= 21:
-        dataIndex = LOC_DATA_POS_OFFSET + 2
-        #Self position
-        if data[LOC_DATA_POS_OFFSET] == 0x41: #DWM1001_TLV_TYPE_POS_XYZ
-            selfX = int.from_bytes(data[dataIndex: dataIndex+3], byteorder='little')
-            dataIndex += 4
-            selfY = int.from_bytes(data[dataIndex: dataIndex+3], byteorder='little')
-            dataIndex += 4
-            selfZ = int.from_bytes(data[dataIndex: dataIndex+3], byteorder='little')
+    def getAnchors(self):
+        '''Only updated by dwmLocGet if this module is an tag
         
-        dataIndex = LOC_DATA_DIST_OFFSET + 3 #3 is offset to start of data
-        #Is anchor, record tag positions
-        if data[LOC_DATA_DIST_OFFSET] == 0x48: #DWM1001_TLV_TYPE_POS_XYZ
-            print("anchor")
-            tags = []
-            for i in range(0, data[LOC_DATA_DIST_OFFSET + 2]): #2 if offset for number of tags
-                tagId = int.from_bytes(data[dataIndex : dataIndex + 7], byteorder='little')
-                dataIndex += 8
-                tagDistance = int.from_bytes(data[dataIndex : dataIndex + 3], byteorder='little')
-                dataIndex += 4
-                tagQf = data[dataIndex]
-                dataIndex += 1
-                tags.append((tagId, tagDistance, tagQf))
-            return tags
+            Returns: list of anchors
+        '''
+        with self._lock:
+            return list.copy(self._anchors)
 
+    def getType(self):
+        '''Finds if this module is an anchor or tag, if it doesn't know, will run dwmLocGet to find out
 
-        #Is Tag, record anchors
-        elif data[LOC_DATA_DIST_OFFSET] == 0x49: #DWM1001_TLV_TYPE_RNG_AN_POS_DIST
-            print("tag")
-            anchors = []
-            for i in range(0, data[LOC_DATA_DIST_OFFSET + 2]):
-                ancId = int.from_bytes(data[dataIndex : dataIndex + 1], byteorder='little')
-                dataIndex += 2
-                ancDistance = int.from_bytes(data[dataIndex : dataIndex + 3], byteorder='little')
-                dataIndex += 4
-                ancDistanceQf = data[dataIndex]
-                dataIndex += 1
-                ancX = int.from_bytes(data[dataIndex : dataIndex + 3], byteorder='little')
-                dataIndex += 4
-                ancY = int.from_bytes(data[dataIndex : dataIndex + 3], byteorder='little')
-                dataIndex += 4
-                ancZ = int.from_bytes(data[dataIndex : dataIndex + 3], byteorder='little')
-                dataIndex += 4
-                ancPosQf = data[dataIndex]
-                dataIndex += 1
-                anchors.append((ancId, ancDistance, ancDistanceQf, ancX, ancY, ancZ, ancPosQf))
-            return anchors
+            Returns: dwmType
+        '''
+        if self._type == None:
+            self.dwmLocGet()
+        return self._type
 
-while True:
-    input()
-    print(round(dwm_loc_get()[0][1] / 1000, 2))
+    def dwmPosGet(self):
+        '''Querries for and updates this modules postion
+        '''
+        tx = [0x02, 0x00]
+        self._send(tx)
+        rxData = self._receive(2)
+        if rxData:
+            dataIndex = 0
+            x = int.from_bytes(rxData[1][1][dataIndex: dataIndex + 3], byteorder="little")
+            dataIndex += 4
+            y = int.from_bytes(rxData[1][1][dataIndex: dataIndex + 3], byteorder="little")
+            dataIndex += 4
+            z = int.from_bytes(rxData[1][1][dataIndex: dataIndex + 3], byteorder="little")
+            dataIndex += 4
+            qf = rxData[1][1][dataIndex]
+            with self._lock:
+                self._pos = pos(x, y, z, qf)
+            return True
+        return False
+
+    def dwmLocGet(self):
+        '''Qurries for and updates this modules postion as well as makes a list of all connected tags or anchors
+            If module is tag, builds list of anchors, distances to them, and there positons
+            If module is anchor, builds list of tags and distances to them
+        '''
+        LOC_DATA_POS_OFFSET = 3
+        LOC_DATA_DIST_OFFSET = LOC_DATA_POS_OFFSET+15
+        txData = [0x0C, 0x00]
+        with self._lock:
+            self._send(txData)
+            data = self._receive(3)
+            if data:
+                dataIndex = 0
+                #Self position
+                if data[1][0][0] == 0x41: #DWM1001_TLV_TYPE_POS_XYZ
+                    x = int.from_bytes(data[1][1][dataIndex: dataIndex+3], byteorder='little')
+                    dataIndex += 4
+                    y = int.from_bytes(data[1][1][dataIndex: dataIndex+3], byteorder='little')
+                    dataIndex += 4
+                    z = int.from_bytes(data[1][1][dataIndex: dataIndex+3], byteorder='little')
+                    qf = data[1][1][dataIndex]
+                    self._pos = pos(x, y, z, qf)
+
+                dataIndex = 1 #Skip the number of distances encoded in the value value
+                #Is anchor, record tag positions
+                if data[2][0][0] == 0x48: #DWM1001_TLV_TYPE_POS_XYZ
+                    self._type = dwmType.anchor
+                    self._tags = []
+                    for i in range(0, data[2][1][0]): #Number of distances encoded in the value value
+                        tagId = int.from_bytes(data[2][1][dataIndex : dataIndex + 7], byteorder='little')
+                        dataIndex += 8
+                        tagDistance = int.from_bytes(data[2][1][dataIndex : dataIndex + 3], byteorder='little')
+                        dataIndex += 4
+                        tagQf = data[2][1][dataIndex]
+                        dataIndex += 1
+                        self._tags.append(tag(tagId, tagDistance, tagQf))
+                #Is Tag, record anchors
+                elif data[2][0][0] == 0x49: #DWM1001_TLV_TYPE_RNG_AN_POS_DIST
+                    self._type = dwmType.tag
+                    self._anchors = []
+                    for i in range(0, data[2][1][0]): #Number of distances encoded in the value value
+                        ancId = int.from_bytes(data[2][1][dataIndex : dataIndex + 1], byteorder='little')
+                        dataIndex += 2
+                        ancDistance = int.from_bytes(data[2][1][dataIndex : dataIndex + 3], byteorder='little')
+                        dataIndex += 4
+                        ancDistanceQf = data[2][1][dataIndex]
+                        dataIndex += 1
+                        ancX = int.from_bytes(data[2][1][dataIndex : dataIndex + 3], byteorder='little')
+                        dataIndex += 4
+                        ancY = int.from_bytes(data[2][1][dataIndex : dataIndex + 3], byteorder='little')
+                        dataIndex += 4
+                        ancZ = int.from_bytes(data[2][1][dataIndex : dataIndex + 3], byteorder='little')
+                        dataIndex += 4
+                        ancPosQf = data[2][1][dataIndex]
+                        dataIndex += 1
+                        self._anchors.append(anchor(ancId, ancDistance, ancDistanceQf, pos(ancX, ancY, ancZ, ancPosQf)))
+                    return True
+            return False
