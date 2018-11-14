@@ -32,7 +32,8 @@ _client.onMessage((evt) => {
             last = curr;
         });
     }else{
-        document.getElementById("cameraErrorText").innerText = "Camera failed to open";
+        document.getElementById("cameraError").style.display = "inherit";
+        document.getElementById("cameraErrorText").innerText = "Robot could not open selected camera";
         stopCamera();
     }
 });
