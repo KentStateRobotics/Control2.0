@@ -27,6 +27,11 @@ def getSerialConn(id):
 
 class serialConn():
     serilaConns = []
+    functionsToCall = []
+
+    start = "|"
+    END = "|"
+    ESCAPE = "~"
     
     def __init__ (self, port):
         self.id = ""
@@ -55,6 +60,16 @@ class serialConn():
             Args:
                 message (string): messge to send
         '''
+        #need to define how start/end and escape character works
+        i = 0
+        while True:
+            i = message.find(start, i)
+            if i == -1: break
+            message = message[:i] + self.start + message[i:]
+            i += 2
+
+        data = self.start + message + self.start + self.END
+        self.newConn.write(data)
         pass
     
     def addRecCallback(self, callback):
@@ -66,6 +81,10 @@ class serialConn():
                         id (string): assigned identifer of the serial device
                         message (string): received messge
         '''
+
+        for p in self.serilaConns:
+            if p.id == callback.id:
+                p.functionsToCall.append(p)
         pass
 
     def rmRecCallback(self, callback):
@@ -74,6 +93,10 @@ class serialConn():
             Args:
                 callback (function(id, message)): function to remove
         '''
+
+        for p in self.functionsToCall:
+            if callback == p:
+                self.functionsToCall.remove(p)
         pass
 
     def restablish(self):
