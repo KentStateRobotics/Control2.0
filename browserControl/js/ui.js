@@ -4,6 +4,8 @@
  */
 
 import {remoteEvent, remoteVarEvent} from "./remoteEvent.js";
+import {reconnect as camRecon} from "./camera.js";
+import * as graphicalStatus from "./graphicalStatus.js";
 
 remoteEvent.getWsStateEvt().addHandler((state) => {
     if(state == 1){
@@ -17,4 +19,7 @@ remoteEvent.getWsStateEvt().addHandler((state) => {
 
 function reconnect(){
     remoteEvent.reconnect(document.getElementById("hostAddress").value);
+    camRecon(document.getElementById("hostAddress").value);
 }
+document.getElementById("hostAddress").value = window.location.hostname;
+document.getElementById("reconnectButton").onclick = reconnect;

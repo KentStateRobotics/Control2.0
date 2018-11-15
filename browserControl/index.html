@@ -5,8 +5,6 @@
     <link type="text/css" href="css/style.css" rel="stylesheet"/> 
     <link type="image/png" href="img/favicon.png" rel="shortcut icon"/>
     <script src="js/ui.js" type="module"></script>
-    <script src="js/camera.js" type="module"></script>
-    <script src="js/graphicalStatus.js" type="module"></script>
 </head>
 <body>
 <div id="wraper">
@@ -17,7 +15,7 @@
     <div id="content">
         <div id="UiNotConnected" style="display: inherit;">
             <h1>not connected</h1>
-            <input type="button" value="connect" onclick="reconnect()"/>
+            <input type="button" value="connect" id="reconnectButton"/>
             <label>Host address: </label><input type="text" id="hostAddress"/>
         </div>
         <div id="UiConnected" style="display: none;">
@@ -29,23 +27,59 @@
                     <input type="button" id="normalStop" value="Soft stop">
                 </div>
                 <div id="cameraDiv">
-                        <canvas style="margin: 0px;" id="cameraView">
-                            <p id="cameraError" style="display: none;"></p>
-                        </canvas>
+                    <canvas style="margin: 0px;" id="cameraView"></canvas>
+                    <div id="cameraError" style="display: none;">
+                        <p id="cameraErrorText"></p>
+                        <input type="button" value="Connect Camera" id="cameraErrorButton">
+                    </div>
                 </div>
-                <div id="arm"></div>
+                <div id="arm">
+                    <p>Visual and numberic infomation about arm and bucket positions and capablity to set postions</p>
+                </div>
                 <div id="status">
                     <canvas style="height: 100%; width: 80%; margin:0px;" id="statusCanvas">
-
                     </canvas>
                 </div>
                 <div id="eStop">
                     <input id="eStopButton" type="button" value="E STOP">
                 </div>
-                <div id="locCon"></div>
-                <div id="magic"></div>
-                <div id="loc"></div>
-                <div id="pos"></div>
+                <div id="camCon">
+                    <input type="button" value="Start" id="camToggle">
+                    <div id="camSelectGrid">
+                        <input type="radio" value="northWest" name="camSelect">
+                        <input type="radio" value="north" name="camSelect" checked>
+                        <input type="radio" value="northEast" name="camSelect">
+                        <input type="radio" value="west" name="camSelect">
+                        <div></div>
+                        <input type="radio" value="east" name="camSelect">
+                        <input type="radio" value="southWest" name="camSelect">
+                        <input type="radio" value="south" name="camSelect">
+                        <input type="radio" value="southEast" name="camSelect">
+                    </div>
+                    <div>
+                        <p id="camFrameRate">Frame rate: 15fps</p>
+                        <p id="camBandwidth">Bandwidth: 1000kbps</p>
+                    </div>
+                    <p id="frameCapValue">Frame cap: 10</p>
+                    <input type="range" min="1" max="20" step="1" value="10" id="camFrameRange">
+                    <div>
+                    <label>Quality: </label><div>
+                        <label>1</label><input type="radio" value="1" name="camQuality">
+                        <label>.5</label><input type="radio" value=".5" name="camQuality">
+                        <label>.25</label><input type="radio" value=".25" name="camQuality" checked>
+                        <label>.125</label><input type="radio" value=".125" name="camQuality">
+                    </div></div>
+                    
+                </div>
+                <div id="magic">
+                    <p>View and set misc settings and values</p>
+                </div>
+                <div id="loc">
+                    <p>Location module, contains cordnates, move to command, visual map?</p>
+                </div>
+                <div id="auto">
+                    <p>Automation module, status and commands, location modules's dig and dump commands</p>
+                </div>
             </div>
         </div>
     </div>
