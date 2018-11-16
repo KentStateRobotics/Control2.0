@@ -4,11 +4,11 @@
  */
 'use strict'
 
-import {wsClient} from "./wsClient.js";
-import {event, varEvent} from "./event.js";
+import {WsClient} from "./wsClient.js";
+import {Event, VarEvent} from "./event.js";
 
 const _remoteEvents = {};
-const _wsConnection = new wsClient(4242);
+const _wsConnection = new WsClient(4242);
 _wsConnection.onMessage((evt) => {
     try{
         var data = JSON.parse(evt.data);
@@ -20,7 +20,7 @@ _wsConnection.onMessage((evt) => {
     }
 });
 
-class remoteEvent extends event{
+class RemoteEvent extends Event{
     /**@class
      * Used to define events that will be triggered on both client and server
      * @param {string} id - Program unique id for event
@@ -32,7 +32,7 @@ class remoteEvent extends event{
         _remoteEvents[id] = this._remoteTrigger.bind(this);
     }
     /**
-     * @returns {varEvent} - Returns event for the state of the websocket client
+     * @returns {VarEvent} - Returns event for the state of the websocket client
      */
     static getWsStateEvt(){
         return _wsConnection.getWsStateEvt();
@@ -64,7 +64,7 @@ class remoteEvent extends event{
     }
 }
 
-class remoteVarEvent extends remoteEvent{
+class RemoteVarEvent extends RemoteEvent{
     /**@class
      * Syncs a value between here and remote program, event is triggered when value is set
      * @param {string} id - Program unique id for event
@@ -74,12 +74,12 @@ class remoteVarEvent extends remoteEvent{
     constructor(id, attribute, handler=null){
         super(id, handler);
         this.attribute = attribute;
-        remoteVarEvent.getWsStateEvt().addHandler((state) => {
+        RemoteVarEvent.getWsStateEvt().addHandler((state) => {
             if(state == 1){
                 this._getValueFromServer();
             }
         });
-        if(remoteVarEvent.getWsStateEvt() == 1){
+        if(RemoteVarEvent.getWsStateEvt() == 1){
             this._getValueFromServer();
         }
     }
@@ -145,4 +145,4 @@ class remoteVarEvent extends remoteEvent{
     }
 }
 
-export{remoteEvent, remoteVarEvent};
+export{RemoteEvent, RemoteVarEvent};

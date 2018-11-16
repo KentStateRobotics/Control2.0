@@ -6,12 +6,12 @@
  */
 'use strict'
 
-import {varEvent} from "./event.js";
+import {VarEvent} from "./event.js";
 
 const _TIMEOUT = 1000;
 const _RETRIES = 3;
 
-class wsClient{
+class WsClient{
     
     /**@class
      * Establishes the connection
@@ -24,7 +24,7 @@ class wsClient{
         this._open = false;
         this._onMessageFunct = null;
         this._connFailueCounter = 0;
-        this._wsStateEvt = new varEvent(0);
+        this._wsStateEvt = new VarEvent(0);
         this.startConn();
     }
     /**
@@ -92,4 +92,4 @@ class wsClient{
     }
 }
 
-export {wsClient};
+export {WsClient};

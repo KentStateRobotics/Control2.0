@@ -3,11 +3,11 @@
  * @module control/ui
  */
 
-import {remoteEvent, remoteVarEvent} from "./remoteEvent.js";
+import {RemoteEvent, RemoteVarEvent} from "./remoteEvent.js";
 import {reconnect as camRecon} from "./camera.js";
 import * as graphicalStatus from "./graphicalStatus.js";
 
-remoteEvent.getWsStateEvt().addHandler((state) => {
+RemoteEvent.getWsStateEvt().addHandler((state) => {
     if(state == 1){
         document.getElementById("UiNotConnected").style.display = "none";
         document.getElementById("UiConnected").style.display = "inherit";
@@ -18,7 +18,7 @@ remoteEvent.getWsStateEvt().addHandler((state) => {
 });
 
 function reconnect(){
-    remoteEvent.reconnect(document.getElementById("hostAddress").value);
+    RemoteEvent.reconnect(document.getElementById("hostAddress").value);
     camRecon(document.getElementById("hostAddress").value);
 }
 document.getElementById("hostAddress").value = window.location.hostname;

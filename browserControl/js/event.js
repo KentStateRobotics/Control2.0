@@ -4,7 +4,7 @@
  */
 'use strict'
 
-class event{
+class Event {
     /**@class
      * Used to define local events
      * @param {function(evt)} [handler] - Optional inital handler
@@ -44,7 +44,7 @@ class event{
     }
 }
 
-class varEvent extends event{
+class VarEvent extends Event{
     /**@class
      * Used to define local events
      * @param {function(evt)} [handler] - Optional inital handler
@@ -78,4 +78,4 @@ class varEvent extends event{
     }
 }
 
-export{event, varEvent};
+export{Event, VarEvent};

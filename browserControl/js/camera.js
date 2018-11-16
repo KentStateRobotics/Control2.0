@@ -6,7 +6,7 @@ import * as ws from "./wsClient.js";
 
 const _CAM_PORT = 4243;
 var _frameRateCap = 10;
-const _client = new ws.wsClient(_CAM_PORT);
+const _client = new ws.WsClient(_CAM_PORT);
 var _camera = "north";
 var _scale = .25;
 var _active = null;
