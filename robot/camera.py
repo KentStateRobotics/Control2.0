@@ -38,4 +38,8 @@ def _sendFrame(client, message):
     else:
         client.send("1")
 
+def close():
+    for cam in cameraMap:
+        cam.release()
+
 _wsServer = wsServer.wsServer(4243, _sendFrame)

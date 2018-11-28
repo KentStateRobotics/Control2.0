@@ -9,6 +9,7 @@ import threading
 import enum
 import collections
 import time
+import math
 
 TIMEOUT = .1
 DELAY = .5
@@ -18,8 +19,8 @@ class dwmApiMode(enum.IntEnum):
     '''Defines the 3 modes of operation for position reterival
     '''
     manual = 0, #Do not automaticly pole for postion
-    posPole = 1, #pole just for this devices posistion
-    fullPole = 2 #pole for all devices postion and distance
+    polePosition = 1, #pole just for this devices posistion
+    polePositionsDistances = 2 #pole for all devices postion and distance
 
 @enum.unique
 class dwmType(enum.IntEnum):
@@ -86,9 +87,9 @@ class dwmAPI:
 
     def _pole(self):
         while True:
-            if self._mode == dwmApiMode.posPole:
+            if self._mode == dwmApiMode.polePosition:
                 self.dwmPosGet()
-            elif self._mode == dwmApiMode.fullPole:
+            elif self._mode == dwmApiMode.polePositionsDistances:
                 self.dwmLocGet()
             else:
                 break;
@@ -135,6 +136,46 @@ class dwmAPI:
         if self._type == None:
             self.dwmLocGet()
         return self._type
+
+    def getCalculatedPos(self):
+        '''Calculates the position based on 2 anchors
+            updates self pos with calculated pos
+
+            retuns: pos
+        '''
+        if len(self._anchors) >= 2:
+            a1 = self._anchors[0]
+            a2 = self._anchors[1]
+            qf = a1['qf'] * a2['qf'] / 100
+            distanceBetweenCenters = math.sqrt((a1['x'] - a2['x'])**2 + (a1['y'] - a2['y'])**2)
+            if distanceBetweenCenters > a1['distance'] + a2['distance'] and distanceBetweenCenters < abs(a1['distance'] - a2['distance']):
+                #Don't intersect
+                return None
+            else:
+                heronS = (a1['distance'] + a2['distance'] + distanceBetweenCenters) / 2
+                area = math.sqrt(heronS(heronS - a1['distance'])(heronS - a2['distance'])(heronS - distanceBetweenCenters))
+                unrootedDistance = (a1['x'] - a2['x'])**2 + (a1['y'] - a2['y'])**2
+                if  unrootedDistance == (a1['distance'] + a2['distance'])**2 or unrootedDistance == (a1['distance'] - a2['distance'])**2:
+                    #They are tangent, find single intercept
+                    divValue = 2 * ((a2['x'] - a1['x'])**2 + (a2['y'] - a1['y'])**2)
+                    x = ((a1['x'] - a2['x'])(a1['distance']**2 - a2['distance']**2) / divValue) - (a1['x'] + a2['x']) / 2
+                    y = ((a1['y'] - a2['y'])(a1['distance']**2 - a2['distance']**2) / divValue) - (a1['y'] + a2['y']) / 2
+                    self._pos = pos(x, y, self._pos['z'], qf)
+                    return self._pos
+                else:
+                    #They have two inteception points
+                    xBase = (a1['x'] + a2['x']) / 2 + ((a2['x'] - a1['x'])(a1['distance']**2 - a2['distance']**2)) / (2 * distanceBetweenCenters**2)
+                    xMod = 2 * area * (a1['y'] - a2['y']) / distanceBetweenCenters**2
+                    yBase = (a1['y'] + a2['y']) / 2 + ((a2['y'] - a1['y'])(a1['distance']**2 - a2['distance']**2)) / (2 * distanceBetweenCenters**2)
+                    yMod = 2 * area * (a1['x'] - a2['x']) / distanceBetweenCenters**2
+                    if xBase + xMod > 0 and yBase - yMod > 0:
+                        self._pos = pos(xBase + xMod, yBase - yMod, self._pos['z'], qf)
+                    elif xBase - xMod > 0 and yBase + yMod > 0:
+                        self._pos = pos(xBase - xMod, yBase + yMod, self._pos['z'], qf)
+                    else:
+                        return None
+                    return self._pos
+        return None
 
     def dwmPosGet(self):
         '''Querries for and updates this modules postion
