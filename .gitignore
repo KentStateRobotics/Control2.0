@@ -108,3 +108,4 @@ out/
 
 nginx
 .vscode
+!nginx/conf/nginx.conf
