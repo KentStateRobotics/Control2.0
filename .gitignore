@@ -106,6 +106,7 @@ venv.bak/
 #jsdoc
 out/
 
-nginx
 .vscode
+nginx/*
+!nginx/conf
 !nginx/conf/nginx.conf
