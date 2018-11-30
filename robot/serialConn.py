@@ -5,12 +5,10 @@ import serial
 import serial.tools.list_ports
 import threading
 
-ports = list(serial.tools.list_ports.comports())
-
 def start ():
-    for p in ports:
-        if "Arduino" in p:
-            serialConn.serilaConns.append(serialConn(p))
+    for p in serial.tools.list_ports.comports():
+        if "Arduino" in p[1]:
+            serialConn.serialConns.append(serialConn(p[0]))
 
 def getSerialConn(id):
     '''Returns a serial connection to a spicific device denoted by id
@@ -20,13 +18,13 @@ def getSerialConn(id):
 
         Returns (serialConn): connection requested, returns None if none is found
     '''
-    for conn in serialConn.serilaConns:
+    for conn in serialConn.serialConns:
         if (conn.getId() == id): #write get id method 
             return conn
     return None
 
 class serialConn():
-    serilaConns = []
+    serialConns = []
     functionsToCall = []
 
     start = "|"
@@ -82,7 +80,7 @@ class serialConn():
                         message (string): received messge
         '''
 
-        for p in self.serilaConns:
+        for p in self.serialConns:
             if p.id == callback.id:
                 p.functionsToCall.append(p)
         pass
@@ -105,3 +103,7 @@ class serialConn():
         pass
 
 start()
+
+print(serialConn.serialConns)
+for conn in serialConn.serialConns:
+    print(conn.newConn)
