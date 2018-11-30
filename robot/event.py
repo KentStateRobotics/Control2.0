@@ -2,7 +2,7 @@
 '''
 import copy
 
-class event:
+class Event:
     '''Basic local event that can be triggered with trigger(evt) and passes an object passed when calling trigger to handlers
 
         Args:
@@ -41,7 +41,7 @@ class event:
         else:
             self._handlers = []
 
-class varEvent(event):
+class VarEvent(Event):
     '''Basic local event that can be triggered with trigger(evt) and passes an object being held to handlers
 
         Args:

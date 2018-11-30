@@ -10,15 +10,15 @@ import remoteEvent
     Property:
         hasGravel (bool, optional): is the robot currently carring gravel
 '''
-startAuto = remoteEvent.remoteEvent("startAuto")
+startAuto = remoteEvent.RemoteEvent("startAuto")
 
 '''Triggers to stop automation
 '''
-stopAuto = remoteEvent.remoteEvent("stopAuto")
+stopAuto = remoteEvent.RemoteEvent("stopAuto")
 
 '''Current status of the automaton module
 
     Property:
         TODO
 '''
-autoStatus = remoteEvent.remoteVarEvent("autoStatus", {})
+autoStatus = remoteEvent.RemoteVarEvent("autoStatus", {})

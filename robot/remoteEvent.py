@@ -9,17 +9,17 @@ def _remoteEventHandler(client, message):
     try:
         print(message)
         message = json.loads(message)
-        if(message["id"] in remoteEvent._remoteEvents):
+        if(message["id"] in RemoteEvent._remoteEvents):
             if("update" in message):
-                remoteEvent._remoteEvents[message["id"]](client, None)
+                RemoteEvent._remoteEvents[message["id"]](client, None)
             else:
-                remoteEvent._remoteEvents[message["id"]](client, message["evt"])
+                RemoteEvent._remoteEvents[message["id"]](client, message["evt"])
     except ValueError as e:
         print(e)
         
 _wsServer = wsServer.wsServer(4242, _remoteEventHandler)
 
-class remoteEvent(event.event):
+class RemoteEvent(event.Event):
     '''Implements remotly synced events
 
         Event handlers attached should be in form handler(client, evt) where client is the client that triggered the event if it was triggered remotely
@@ -62,7 +62,7 @@ class remoteEvent(event.event):
         for handler in self._handlers:
             handler(client, evt)
 
-class remoteVarEvent(remoteEvent):
+class RemoteVarEvent(RemoteEvent):
     '''Implements remotly synced variables and update events
 
         Event handlers attached should be in form handler(client, value) where client is the client that triggered the event if it was triggered remotely

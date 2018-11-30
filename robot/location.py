@@ -8,13 +8,13 @@ import sensor
 import remoteEvent
 
 #Location of robot in the pit
-pitLoc = remoteEvent.remoteVarEvent("pitLoc", {"x": 0, "y": 0})
+pitLoc = remoteEvent.RemoteVarEvent("pitLoc", {"x": 0, "y": 0})
 
 #Location the robot is going to
-pitLocCom = remoteEvent.remoteVarEvent("pitLocComand", {"x": 0, "y": 0})
+pitLocCom = remoteEvent.RemoteVarEvent("pitLocComand", {"x": 0, "y": 0})
 
 #Preforms digging operation
-locDoADig = remoteEvent.remoteEvent("locDoADig")
+locDoADig = remoteEvent.RemoteEvent("locDoADig")
 
 #Cancels current location module operation
-locCancel = remoteEvent.remoteEvent("locCancel")
+locCancel = remoteEvent.RemoteEvent("locCancel")
