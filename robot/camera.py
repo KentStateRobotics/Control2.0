@@ -4,22 +4,32 @@
 import wsServer
 import cv2
 import numpy
+import threading
 
 cameraMap = {
-    "north": cv2.VideoCapture(0),
-    "northEast": cv2.VideoCapture(1),
-    "east": cv2.VideoCapture(2),
-    "southEast": cv2.VideoCapture(3),
-    "south": cv2.VideoCapture(4),
-    "southWest": cv2.VideoCapture(5),
-    "west": cv2.VideoCapture(6),
-    "northWest": cv2.VideoCapture(7)
+    "front": 0,
+    "frontRight": 1,
+    "backRight": 2,
+    "back": 3,
+    "backLeft": 4,
+    "frontLeft": 5
 }
 
+cameraLock = threading.Lock()
+currentCameraSelect = None
+currentCamera = None
+
 def getFrame(camera, scale):
+    global currentCamera, currentCameraSelect
+    if currentCameraSelect != camera:
+        currentCameraSelect = camera
+        if not camera in cameraMap:
+            print(camera)
+            return None
+        currentCamera = cv2.VideoCapture(cameraMap[camera])
     scale = float(scale)
     if camera in cameraMap:
-        rval, frame = cameraMap[camera].read()
+        rval, frame = currentCamera.read()
         if not frame is None:
             try:
                 if not scale == 1: 
@@ -32,9 +42,13 @@ def getFrame(camera, scale):
     return None
 
 def _sendFrame(client, message):
-    frame = getFrame(*message.split(' '))
-    if frame:
-        client.send(frame)
+    if cameraLock.acquire(False):
+        frame = getFrame(*message.split(' '))
+        cameraLock.release()
+        if frame:
+            client.send(frame)
+        else:
+            client.send("1")
     else:
         client.send("1")
 
