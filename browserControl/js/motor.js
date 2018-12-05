@@ -37,6 +37,6 @@ armAngleCom = RemoteVarEvent("armAngleCom", {"elbow": 0, "bucket": 0})
 /**Emergency stop for all motors and will ignore all move commands until released
  * @param {bool} - True to stop, false to release
  */
-motorStop = RemoteVarEvent("motorStop", False)
+eStop = RemoteVarEvent("eStop", False)
 
-export{motorSettings, motorSpeed, motorSpeedCom, armAngle, armAngleCom, motorStop};
+export{motorSettings, motorSpeed, motorSpeedCom, armAngle, armAngleCom, eStop};

@@ -16,5 +16,8 @@ pitLocCom = remoteEvent.RemoteVarEvent("pitLocComand", {"x": 0, "y": 0})
 #Preforms digging operation
 locDoADig = remoteEvent.RemoteEvent("locDoADig")
 
+#When close to bin will move to proper postion and preform dumping operation
+locDoADump = remoteEvent.RemoteEvent("locDoADump")
+
 #Cancels current location module operation
 locCancel = remoteEvent.RemoteEvent("locCancel")

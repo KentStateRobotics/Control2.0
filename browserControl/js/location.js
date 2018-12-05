@@ -3,7 +3,7 @@
  * @module control/location
  */
 import {RemoteEvent, RemoteVarEvent} from "./js/remoteEvent.js";
-   
+
 /**Location of robot in the pit
  * @prop {float} x - X location
  * @prop {float} y - Y location
@@ -20,8 +20,12 @@ const pitLocCom = RemoteVarEvent("pitLocComand", {"x": 0, "y": 0})
  */
 const locDoADig = RemoteEvent("locDoADig")
 
+/**When close to bin will move to proper postion and preform dumping operation
+ */
+const locDoADump = RemoteEvent("locDoADump")
+
 /**Cancels current location module operation
  */
 const locCancel = RemoteEvent("locCancel")
 
-export {pitLoc, pitLocCom, locDoADig, locCancel}
+export {pitLoc, pitLocCom, locDoADig, locDoADump, locCancel}
