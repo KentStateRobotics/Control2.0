@@ -18,7 +18,7 @@ var manualInputEnable = new VarEvent(false, (newMode) => {
 });
 
 const controllerMap = {
-    ps4:{
+    xbox1:{
         axes: {
             leftHori: 0,
             leftVert: 1,
@@ -26,8 +26,8 @@ const controllerMap = {
             rightVert: 3
         },
         buttons: {
-            a: 0,
-            b: 1,
+            a: 0, //Manual control
+            b: 1, //Estop
             x: 2,
             y: 3,
             leftBump: 4,
@@ -46,32 +46,43 @@ const controllerMap = {
         config: {
             id: "Wireless Controller",
             threshold: 10
-        }
+        },
+        status: {} //Dynamicly used
     }
 }
-
 function startGamepadLoop(){
     if(!gamepadLoopRunning){
         gamepadLoopRunning = true;
         gamepadLoop();
     } 
 }
+//gamepads[gamepadInUse].buttons[i].pressed
+//gamepads[gamepadInUse].axes[i]
+
 
 function gamepadLoop(){
     let gamepads = navigator.getGamepads(); //navigator.getGamepads ? : navigator.webkitGetGamepads;
     gamepad = null;
-    gamepads.forEach((pad) => {
+    padMap = null;
+    gamepads.forEach((pad) => { //TODO: Foreach doesn't work here
         if(pad != null){
             gamepad = pad;
+            controllerMap.forEach((map) => {
+                if(gamepad.id.indexOf(map.config.id) != -1){
+                    padMap = map;
+                    break;
+                }
+            });
             break;
         }
     });
     if(gamepad != null){
-        if(gamepads[gamepadInUse] != null && gamepads[gamepadInUse].id.indexOf() != -1){
-            if(manualInputEnable.get()){
-                //Test for changes in other buttons
-            }
-            //Test for estop and manual mode buttons
+        if(manualInputEnable.get()){
+            //Test for changes in other buttons
+        }
+        //Test for estop and manual mode buttons
+        if(gamepad.axes[controllerMap.xbox1.axes.leftVert]){
+
         }
     }
     if(gamepadLoopRunning) requestAnimationFrame(gamepadLoop);

@@ -15,7 +15,8 @@ const _error = document.getElementById("cameraError");
 const _frameRateDispaly = document.getElementById("camFrameRate");
 const _bandwidthDisplay = document.getElementById("camBandwidth");
 
-var curr, last = Date.now();
+var curr = Date.now();
+var last = Date.now();
 var _open = false;
 
 _client.onMessage((evt) => {
@@ -39,7 +40,7 @@ _client.onMessage((evt) => {
 });
 
 function _request(){
-    _client.send(_camera + " " + _scale);
+    _client.send(_camera + " " + _scale + " " + curr);
 }
 
 function startCamera(camera){
