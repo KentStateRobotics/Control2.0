@@ -9,7 +9,6 @@ var _frameRateCap = 10;
 const _client = new ws.WsClient(_CAM_PORT);
 var _camera = "front";
 var _scale = .25;
-var _active = null;
 const _canvas = document.getElementById("cameraView").getContext('2d');
 const _error = document.getElementById("cameraError");
 const _frameRateDispaly = document.getElementById("camFrameRate");
@@ -31,6 +30,7 @@ _client.onMessage((evt) => {
             _frameRateDispaly.innerText = "Frame rate: " + Math.round(1000 / (curr - last));
             _bandwidthDisplay.innerText = "Bandwidth: " + Math.round(6480 * Math.pow(_scale, 1.58) *_frameRateCap) + "kbps";
             last = curr;
+
         });
     }else{
         document.getElementById("cameraError").style.display = "inherit";
@@ -39,23 +39,18 @@ _client.onMessage((evt) => {
     }
 });
 
-function _request(){
-    _client.send(_camera + " " + _scale + " " + curr);
-}
-
-function startCamera(camera){
-    if(_open){
-        stopCamera();
-    }
+function startCamera(camera, scale, frameRate){
     _open = true;
     _camera = camera;
-    _active = setInterval(_request, 1000 / _frameRateCap);
+    _scale = scale;
+    _frameRateCap = frameRate;
+    _client.send(_camera + " " + _scale + " " + _frameRateCap);
     document.getElementById("camToggle").value = "stop";
 }
 
 function stopCamera(){
-    clearInterval(_active);
     _open = false;
+    _client.send("0")
     document.getElementById("camToggle").value = "start";
 }
 
@@ -64,26 +59,24 @@ function reconnect(host){
 }
 
 function changeFrameRate(rate){
-    _frameRateCap = rate;
-    document.getElementById("frameCapValue").innerText = "Frame cap: " + _frameRateCap;
+    _frameRateCap = rate
     if(_open){
-        stopCamera();
-        startCamera(_camera);
+        startCamera(_camera, _scale, _frameRateCap);
     }
+    document.getElementById("frameCapValue").innerText = "Frame cap: " + _frameRateCap;
 }
 
 function changeQuality(quality){
     _scale = quality;
     if(_open){
-        stopCamera();
-        startCamera(_camera);
+        startCamera(_camera, _scale, _frameRateCap);
     }
 }
 
 _client.getWsStateEvt().addHandler((evt) => {
     if(evt == 1){
         document.getElementById("cameraError").style.display = "none";
-        startCamera(_camera);
+        startCamera(_camera, _scale, _frameRateCap);
     } else {
         _canvas.canvas.height = 0;
         document.getElementById("cameraErrorText").innerText = "Camera connection not established";
@@ -93,7 +86,7 @@ _client.getWsStateEvt().addHandler((evt) => {
 });
 
 document.getElementsByName("camSelect").forEach((radio) => {
-    radio.onchange = () => { startCamera(radio.value); }
+    radio.onchange = () => { startCamera(radio.value, _scale, _frameRateCap); }
 });
 
 document.getElementsByName("camQuality").forEach((radio) => {
@@ -111,9 +104,9 @@ document.getElementById("cameraErrorButton").onclick = () => {
 
 document.getElementById("camToggle").onclick = () => {
     if(_open){
-        stopCamera(_camera);
+        stopCamera();
     } else {
-        startCamera(_camera);
+        startCamera(_camera, _scale, _frameRateCap);
     }
     
 }
