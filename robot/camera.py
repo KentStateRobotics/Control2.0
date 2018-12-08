@@ -6,7 +6,6 @@ import cv2
 import numpy
 import threading
 import time
-import math
 
 cameraMap = {
     "front": 0,
@@ -17,46 +16,36 @@ cameraMap = {
     "frontLeft": 5
 }
 
-HEIGHT = 480
-WIDTH = 640
-
 _camLock = threading.RLock()
 _currentCameraSelect = None
 _currentCamera = cv2.VideoCapture()
-_frameRate = 0
-_scale = 1
 _running = False
-_client = None
-_newCamera = 0
+_height = 480
+_currentHeight = 0
+_camera = "front"
+_frameRate = 10
 _camThread = threading.Thread()
 
-def _changeScale(scale=None):
-    global _scale
-    if scale:
-        _scale = scale
-    with _camLock:
-        _currentCamera.set(cv2.CAP_PROP_FRAME_WIDTH, int(WIDTH * _scale))
-        _currentCamera.set(cv2.CAP_PROP_FRAME_HEIGHT, int(HEIGHT * _scale))
-
-def getFrame(camera):
-    global _currentCamera, _currentCameraSelect
+def getFrame(camera, height=0):
+    global _currentCamera, _currentCameraSelect, _height, _currentHeight
+    if height == 0:
+        height = _height
     with _camLock:
         if _currentCameraSelect != camera:
-            _currentCameraSelect = camera
             if not camera in cameraMap:
                 return None
             _currentCamera.release()
             _currentCamera.open(cameraMap[camera])
-            _changeScale(_scale)
-        if camera in cameraMap and _currentCamera.isOpened():
+        if height != _currentHeight or _currentCameraSelect != camera:
+            _currentHeight = height
+            _currentCamera.set(cv2.CAP_PROP_FRAME_WIDTH, 4/3 * _currentHeight)
+            _currentCamera.set(cv2.CAP_PROP_FRAME_HEIGHT, _currentHeight)
+            print(_currentCamera.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        _currentCameraSelect = camera
+        if _currentCamera.isOpened():
             rval, frame = _currentCamera.read()
-            #print(_currentCamera.get(cv2.CAP_PROP_FPS))
-            #print(_currentCamera.get(cv2.CAP_PROP_FRAME_WIDTH))
-            #print(_currentCamera.get(cv2.CAP_PROP_FRAME_HEIGHT))
             if not frame is None:
                 try:
-                    #if not scale == 1:
-                        #frame = cv2.resize(frame, None, fx=scale, fy=scale)
                     rval, frame = cv2.imencode(".jpg", frame)
                     frame = frame.tobytes()
                     return frame
@@ -66,32 +55,35 @@ def getFrame(camera):
         _currentCameraSelect = None
         return None
 
-def _cameraLoop():
-    global _frameRate, _client, _newCamera, _newScale
+def _cameraLoop(client):
+    global _running, _camera, _height, _frameRate
     while _running:
         if _frameRate != 0: 
             time.sleep(1 / _frameRate)
-        frame = getFrame(_newCamera)
+        frame = getFrame(_camera, _height)
         if frame:
-            _client.send(frame)
+            client.send(frame)
 
 def _handleRequest(client, message):
-    global _frameRate, _newCamera, _scale, _client, _running, _camThread, _currentCamera
+    global _running, _camThread, _height, _camera, _frameRate
     if message == "0":
         _running = False
     else:
-        _client = client
         try:
-            _newCamera, scale, _frameRate = (*message.split(' '),)
-            _frameRate = float(_frameRate)
-            scale = float(scale)
+            camera, height, frameRate = (*message.split(' '),)
+            frameRate = int(frameRate)
+            height = int(height)
+            if not camera in cameraMap:
+                raise ValueError("camara value not valid")
         except ValueError:
             print("bad message")
             return None
-        _changeScale(scale)
+        _frameRate = frameRate
+        _height = height
+        _camera = camera
         _running = True
         if not _camThread.is_alive():
-            _camThread = threading.Thread(target=_cameraLoop)
+            _camThread = threading.Thread(target=_cameraLoop, args=(client,))
             _camThread.start()
 
 _wsServer = wsServer.wsServer(4243, _handleRequest)
