@@ -1,4 +1,5 @@
 '''Implements cameras
+    On Windows must set enviromental variable OPENCV_VIDEOIO_PRIORITY_MSMF to 0
     TODO: Create way to differntiate cameras
 '''
 import wsServer
@@ -22,8 +23,8 @@ _currentCamera = cv2.VideoCapture()
 _running = False
 _height = 480
 _currentHeight = 0
-_camera = "front"
 _frameRate = 10
+_camera = ""
 _camThread = threading.Thread()
 
 def getFrame(camera, height=0):
@@ -34,13 +35,15 @@ def getFrame(camera, height=0):
         if _currentCameraSelect != camera:
             if not camera in cameraMap:
                 return None
+            print("release")
             _currentCamera.release()
+            print(_currentCamera.isOpened())
             _currentCamera.open(cameraMap[camera])
+            print(_currentCamera.isOpened())
         if height != _currentHeight or _currentCameraSelect != camera:
             _currentHeight = height
             _currentCamera.set(cv2.CAP_PROP_FRAME_WIDTH, 4/3 * _currentHeight)
             _currentCamera.set(cv2.CAP_PROP_FRAME_HEIGHT, _currentHeight)
-            print(_currentCamera.get(cv2.CAP_PROP_FRAME_HEIGHT))
         _currentCameraSelect = camera
         if _currentCamera.isOpened():
             rval, frame = _currentCamera.read()
@@ -56,7 +59,7 @@ def getFrame(camera, height=0):
         return None
 
 def _cameraLoop(client):
-    global _running, _camera, _height, _frameRate
+    global _running, _height, _frameRate, _camera
     while _running:
         if _frameRate != 0: 
             time.sleep(1 / _frameRate)
@@ -65,9 +68,12 @@ def _cameraLoop(client):
             client.send(frame)
 
 def _handleRequest(client, message):
-    global _running, _camThread, _height, _camera, _frameRate
+    global _running, _camThread, _height, _frameRate, _camera
+    print(message)
     if message == "0":
         _running = False
+        if _camThread.is_alive():
+            _camThread.join()
     else:
         try:
             camera, height, frameRate = (*message.split(' '),)
@@ -80,8 +86,8 @@ def _handleRequest(client, message):
             return None
         _frameRate = frameRate
         _height = height
-        _camera = camera
         _running = True
+        _camera = camera
         if not _camThread.is_alive():
             _camThread = threading.Thread(target=_cameraLoop, args=(client,))
             _camThread.start()

@@ -71,9 +71,9 @@ function changeHeight(height){
 }
 
 function changeCamera(camera){
-    _camera = radio.value;
+    _camera = camera;
         if(_open){
-            startCamera(radio.value);
+            startCamera();
         }
 }
 
