@@ -22,12 +22,13 @@ def getSerialConn(id):
         if (conn.getId() == id): #write get id method 
             return conn
     return None
+#write way to escape message if takes too long
 
 class serialConn():
     serialConns = []
     functionsToCall = []
 
-    start = "|"
+    START = "|"
     END = "|"
     ESCAPE = "~"
     
@@ -63,10 +64,10 @@ class serialConn():
         while True:
             i = message.find(start, i)
             if i == -1: break
-            message = message[:i] + self.start + message[i:]
+            message = message[:i] + self.START + message[i:]
             i += 2
 
-        data = self.start + message + self.start + self.END
+        data = self.START + message + self.START + self.END
         self.newConn.write(data)
         pass
     
