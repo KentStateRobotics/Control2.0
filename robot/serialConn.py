@@ -9,6 +9,7 @@ def start ():
     for p in serial.tools.list_ports.comports():
         if "Arduino" in p[1]:
             serialConn.serialConns.append(serialConn(p[0]))
+    
 
 def getSerialConn(id):
     '''Returns a serial connection to a spicific device denoted by id
@@ -27,28 +28,46 @@ class serialConn():
     serialConns = []
     functionsToCall = []
 
-    start = "|"
+    START = "|"
     END = "|"
     ESCAPE = "~"
+
+    msgIn = ""
     
     def __init__ (self, port):
         self.id = ""
-        self.newConn = serial.Serial(port)
-        threading.Thread(target = self.findId)
+        self.port = port
+        self.newConn = serial.Serial(port = self.port, baudrate = 115200)
+        self.thread = threading.Thread(target = self.findId)
+        self.thread.start()
 
     def getId(self):
         return self.id
 
-    def findId (self, port): #loops to get id from arduino
-        ser = serial.Serial()
-        ser.port = port
-        ser.open()
-
+    def findId (self): #loops to get id from arduino
+        print("id pre")
         while self.id == "":
-           self.id = ser.read()
-
-        ser.close()
+           self.id = self.newConn.read()
+           print("recived id")
+           print(self.id)
+        while True: self.recieve()      #opens up to recieve message
+        self.send("Test")               #testing send function
+        self.newConn.close()
         pass
+
+    def recieve(self):
+        print("ready to receive")
+        msgIn = self.newConn.read()
+        fullMsg = ""
+        if msgIn == self.START:
+            while True:
+                fullMsg += msgIn
+                msgIn = self.newConn.read()
+                if msgIn == self.END: break
+
+        print("received: ")
+        print(fullMsg)
+            
 
     '''Handles one serial connection
     '''
@@ -58,15 +77,15 @@ class serialConn():
             Args:
                 message (string): messge to send
         '''
-        #need to define how start/end and escape character works
+        #need to define how START/end and escape character works
         i = 0
         while True:
-            i = message.find(start, i)
+            i = message.find(self.START, i)
             if i == -1: break
-            message = message[:i] + self.start + message[i:]
+            message = message[:i] + self.START + message[i:]
             i += 2
 
-        data = self.start + message + self.start + self.END
+        data = self.START + message + self.START + self.END
         self.newConn.write(data)
         pass
     
@@ -98,12 +117,9 @@ class serialConn():
         pass
 
     def restablish(self):
-        '''Recreate connection and restart arduino device in the process
+        '''Recreate connection and reSTART arduino device in the process
         '''
         pass
 
 start()
-
-print(serialConn.serialConns)
-for conn in serialConn.serialConns:
-    print(conn.newConn)
+input()
