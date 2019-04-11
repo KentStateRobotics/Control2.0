@@ -1,14 +1,14 @@
 /**
  * Handles reading from keyboard and different types of game pads and triggering events and commands based off them
- * @module control/controlInput
+ * module control/controlInput
  */
 
- import {motorSpeedCom, armAngleCom, eStop} from "./js/motor.js";
- import {locDoADig, locDoADump, locCancel} from "./js/location.js";
- import {stopAuto} from "./js/auto.js";
- import {VarEvent} from "./js/event.js";
+import {motorSpeedCom, armAngleCom, eStop} from "./motor.js";
+import {locDoADig, locDoADump, locCancel} from "./location.js";
+import {stopAuto} from "./auto.js";
+import {VarEvent} from "./event.js";
 
-var gamepadLoopRunning = false;
+var gamepadsLoopRunning = false;
 var manualInputEnable = new VarEvent(false, (newMode) => {
     if(newMode){
         stopAuto.trigger(null);
@@ -51,85 +51,241 @@ const controllerMap = {
     }
 }
 
-function startGamepadLoop(){
-    if(!gamepadLoopRunning){
-        gamepadLoopRunning = true;
-        gamepadLoop();
+function startgamepadsLoop(){
+    if(!gamepadsLoopRunning){
+        gamepadsLoopRunning = true;
+        gamepadsLoop();
     } 
 }
-//gamepads[gamepadInUse].buttons[i].pressed
-//gamepads[gamepadInUse].axes[i]
+//gamepads[gamepadsInUse].buttons[i].pressed
+//gamepads[gamepadsInUse].axes[i]
 
 
-function gamepadLoop(){
-    let gamepads = navigator.getGamepads(); //navigator.getGamepads ? : navigator.webkitGetGamepads;
-    gamepad = null;
-    padMap = null;
-    gamepads.forEach((pad) => { //TODO: Foreach doesn't work here
+function gamepadsLoop(){
+    var gamepads = navigator.getGamepads(); //navigator.getgamepads ? : navigator.webkitGetgamepads;
+    if (!gamepads){
+        return;
+    }
+    var padMap = null;
+    ////console.log(gamepads);
+
+    let gamepad = null;
+    for(let pad of gamepads){
         if(pad != null){
-            gamepad = pad;
-            controllerMap.forEach((map) => {
-                if(gamepad.id.indexOf(map.config.id) != -1){
-                    padMap = map;
-                    break;
-                }
-            });
-            break;
+            if(pad.id == "Xbox 360 Controller (XInput STANDARD GAMEPAD)"){
+                gamepad = pad;
+                break;
+            }
         }
-    });
+    }
+
     if(gamepad != null){
-        if(manualInputEnable.get()){            //ask what do and if can change
+        var x;
+        var y;
+        var mag;
+        var angle;
+        if(manualInputEnable.get()){
             //Test for changes in other buttons
         }
         //Test for estop and manual mode buttons
-        if(gamepad.buttons[controllerMap.xbox1.buttons.b]){         //1 in button dict
-            //estop message
-            print("Estop");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.a]) { //0 in button dict
-            print("manualcontrol");
-        } else if(gamepad.axes[controllerMap.xbox1.axes.leftVert] != 0 || gamepad.axes[controllerMap.xbox1.axes.leftHori] != 0){    //1 or 0 in axes dict
-            var y = gamepad.axes[controllerMap.xbox1.axes.leftVert];    //x value of left stick
-            var x = gamepad.axes[controllerMap.xbox1.axes.leftHori];    //y value of left stick
-            var mag = Math.sqrt(Math.pow(y, 2) + Math.pow(x, 2));       //calculate magnitude of left stick 
-            var angle = Math.tan(y/x);                                  //calculate angle of left stick
-            print("Left mag: " + mag + " Left angle: " + angle);
-        } else if(gamepad.axes[controllerMap.xbox1.axes.rightVert] != 0 || gamepad.axes[controllerMap.xbox1.axes.rightHori] != 0){  //3 or 2 in axes dict
-            var y = gamepad.axes[controllerMap.xbox1.axes.rightVert];
-            var x = gamepad.axes[controllerMap.xbox1.axes.rightHori];
-            var mag = Math.sqrt(Math.pow(y, 2) + Math.pow(x, 2));
-            var angle = Math.tan(y/x);
-            print("Right mag: " + mag + " Right angle: " + angle);
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.x]) { //2 in button dict
-            print("x is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.y]) { //3 in button dict
-            print("y is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.leftBump]) { //4 in button dict
-            print("left bump is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.rightBump]) { //5 in button dict
-            print("right bump is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.leftTrigger]) { //6 in button dict
-            print("left trigger is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.rightTrigger]) { //7 in button dict
-            print("right trigger is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.select]) { //8 in button dict
-            print("select is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.start]) { //9 in button dict
-            print("start is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.leftStick]) { //10 in button dict
-            print("left stick is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.rightStick]) { //11 in button dict
-            print("right stick is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.up]) { //12 in button dict
-            print("up is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.down]) { //13 in button dict
-            print("down is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.left]) { //14 in button dict
-            print("left is pressed");
-        } else if(gamepad.buttons[controllerMap.xbox1.buttons.right]) { //15 in button dict
-            print("right is pressed");
+        if(gamepad.buttons[controllerMap.xbox1.buttons.b].pressed){         //1 in button dict
+            document.getElementById("b").style.backgroundColor = "green";
+            //console.log(gamepad.buttons[controllerMap.xbox1.buttons.b])
+            //console.log("Estop");
+        } else{
+            document.getElementById("b").style.backgroundColor = "red";
         }
+        if(gamepad.buttons[controllerMap.xbox1.buttons.a].pressed) { //0 in button dict
+            document.getElementById("a").style.backgroundColor = "green";
+            //console.log("manualcontrol");
+        } else{
+            document.getElementById("a").style.backgroundColor = "red";
+        }
+        if(gamepad.axes[controllerMap.xbox1.axes.leftVert] > 0.1 || gamepad.axes[controllerMap.xbox1.axes.leftHori] > 0.1){    //1 or 0 in axes dict
+            y = gamepad.axes[controllerMap.xbox1.axes.leftVert];    //x value of left stick
+            x = gamepad.axes[controllerMap.xbox1.axes.leftHori];    //y value of left stick
+            mag = Math.sqrt(Math.pow(y, 2) + Math.pow(x, 2));       //calculate magnitude of left stick 
+            angle = Math.tan(y/x);                                  //calculate angle of left stick
+            //console.log("Left mag: " + mag + " Left angle: " + angle);
+        } else{
+            //document.getElementById("b").style.backgroundColor = "red";
+        } 
+        if(gamepad.axes[controllerMap.xbox1.axes.rightVert] > 0.1 || gamepad.axes[controllerMap.xbox1.axes.rightHori] > 0.1){  //3 or 2 in axes dict
+            y = gamepad.axes[controllerMap.xbox1.axes.rightVert];
+            x = gamepad.axes[controllerMap.xbox1.axes.rightHori];
+            mag = Math.sqrt(Math.pow(y, 2) + Math.pow(x, 2));
+            angle = Math.tan(y/x);
+            //console.log("Right mag: " + mag + " Right angle: " + angle);
+        } else{
+            //document.getElementById("b").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.x].pressed) { //2 in button dict
+            document.getElementById("x").style.backgroundColor = "green";
+            //console.log("x is pressed");
+        } else{
+            document.getElementById("x").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.y].pressed) { //3 in button dict
+            document.getElementById("y").style.backgroundColor = "green";
+            //console.log("y is pressed");
+        } else{
+            document.getElementById("y").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.leftBump].pressed) { //4 in button dict
+            document.getElementById("leftBump").style.backgroundColor = "green";
+            //console.log("left bump is pressed");
+        } else{
+            document.getElementById("leftBump").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.rightBump].pressed) { //5 in button dict
+            document.getElementById("rightBump").style.backgroundColor = "green";
+            //console.log("right bump is pressed");
+        } else{
+            document.getElementById("rightBump").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.leftTrigger].pressed) { //6 in button dict
+            document.getElementById("leftTrig").style.backgroundColor = "green";
+            //console.log("left trigger is pressed");
+        } else{
+            document.getElementById("leftTrig").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.rightTrigger].pressed) { //7 in button dict
+            document.getElementById("rightTrig").style.backgroundColor = "green";
+            //console.log("right trigger is pressed");
+        } else{
+            document.getElementById("rightTrig").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.select].pressed) { //8 in button dict
+            document.getElementById("select").style.backgroundColor = "green";
+            //console.log("select is pressed");
+        } else{
+            document.getElementById("select").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.start].pressed) { //9 in button dict
+            document.getElementById("start").style.backgroundColor = "green";
+            //console.log("start is pressed");
+        } else{
+            document.getElementById("start").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.leftStick].pressed) { //10 in button dict
+            document.getElementById("leftStick").style.backgroundColor = "green";
+            //console.log("left stick is pressed");
+        } else{
+            document.getElementById("leftStick").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.rightStick].pressed) { //11 in button dict
+            document.getElementById("rightStick").style.backgroundColor = "green";
+            //console.log("right stick is pressed");
+        } else{
+            document.getElementById("rightStick").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.up].pressed) { //12 in button dict
+            document.getElementById("up").style.backgroundColor = "green";
+            //console.log("up is pressed");
+        } else{
+            document.getElementById("up").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.down].pressed) { //13 in button dict
+            document.getElementById("down").style.backgroundColor = "green";
+            //console.log("down is pressed");
+        } else{
+            document.getElementById("down").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.left].pressed) { //14 in button dict
+            document.getElementById("left").style.backgroundColor = "green";
+            //console.log("left is pressed");
+        } else{
+            document.getElementById("left").style.backgroundColor = "red";
+        } 
+        if(gamepad.buttons[controllerMap.xbox1.buttons.right].pressed) { //15 in button dict
+            document.getElementById("right").style.backgroundColor = "green";
+            //console.log("right is pressed");
+        } else{
+            document.getElementById("right").style.backgroundColor = "red";
+        }
+        /*
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.b].pressed){                               //start of !pressed
+            document.getElementById("b").style.backgroundColor = "red";
+            //console.log(gamepad.buttons[controllerMap.xbox1.buttons.b])
+            //console.log("Estop");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.a].pressed) { //0 in button dict
+            document.getElementById("a").style.backgroundColor = "red";
+            //console.log("manualcontrol");
+        } 
+        if(!gamepad.axes[controllerMap.xbox1.axes.leftVert] > 0.1 || !gamepad.axes[controllerMap.xbox1.axes.leftHori] > 0.1){    //1 or 0 in axes dict
+            y = 0;    //x value of left stick
+            x = 0;    //y value of left stick
+            mag = Math.sqrt(Math.pow(y, 2) + Math.pow(x, 2));       //calculate magnitude of left stick 
+            angle = Math.tan(y/x);                                  //calculate angle of left stick
+            //console.log("Left mag: " + mag + " Left angle: " + angle);
+        } 
+        if(!gamepad.axes[controllerMap.xbox1.axes.rightVert] > 0.1 || !gamepad.axes[controllerMap.xbox1.axes.rightHori] > 0.1){  //3 or 2 in axes dict
+            y = 0;
+            x = 0;
+            mag = Math.sqrt(Math.pow(y, 2) + Math.pow(x, 2));
+            angle = Math.tan(y/x);
+            //console.log("Right mag: " + mag + " Right angle: " + angle);
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.x].pressed) { //2 in button dict
+            document.getElementById("x").style.backgroundColor = "red";
+            //console.log("x is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.y].pressed) { //3 in button dict
+            document.getElementById("y").style.backgroundColor = "red";
+            //console.log("y is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.leftBump].pressed) { //4 in button dict
+            document.getElementById("leftBump").style.backgroundColor = "red";
+            //console.log("left bump is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.rightBump].pressed) { //5 in button dict
+            document.getElementById("rightBump").style.backgroundColor = "red";
+            //console.log("right bump is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.leftTrigger].pressed) { //6 in button dict
+            document.getElementById("leftTrig").style.backgroundColor = "red";
+            //console.log("left trigger is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.rightTrigger].pressed) { //7 in button dict
+            document.getElementById("rightTrig").style.backgroundColor = "red";
+            //console.log("right trigger is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.select].pressed) { //8 in button dict
+            document.getElementById("select").style.backgroundColor = "red";
+            //console.log("select is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.start].pressed) { //9 in button dict
+            document.getElementById("start").style.backgroundColor = "red";
+            //console.log("start is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.leftStick].pressed) { //10 in button dict
+            document.getElementById("leftStick").style.backgroundColor = "red";
+            //console.log("left stick is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.rightStick].pressed) { //11 in button dict
+            document.getElementById("rightStick").style.backgroundColor = "red";
+            //console.log("right stick is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.up].pressed) { //12 in button dict
+            document.getElementById("up").style.backgroundColor = "red";
+            //console.log("up is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.down].pressed) { //13 in button dict
+            document.getElementById("down").style.backgroundColor = "red";
+            //console.log("down is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.left].pressed) { //14 in button dict
+            document.getElementById("left").style.backgroundColor = "red";
+            //console.log("left is pressed");
+        } 
+        if(!gamepad.buttons[controllerMap.xbox1.buttons.right].pressed) { //15 in button dict
+            document.getElementById("right").style.backgroundColor = "red";
+            //console.log("right is pressed");
+        }
+        */
     }
-    if(gamepadLoopRunning) requestAnimationFrame(gamepadLoop);
+    if(gamepadsLoopRunning) requestAnimationFrame(gamepadsLoop);
 }
 
-startGamepadLoop();
+startgamepadsLoop();
